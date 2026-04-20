@@ -1,0 +1,16 @@
+{
+  "name": "@xeplr/ui-utils",
+  "version": "1.0.0",
+  "description": "UI utility components: file upload with progress, snackbar, static data (countries/states)",
+  "type": "module",
+  "main": "src/index.js",
+  "files": ["src/"],
+  "keywords": ["react", "hooks", "file-upload", "ui", "utilities", "countries", "states"],
+  "author": "xeplr",
+  "license": "MIT",
+  "repository": { "type": "git", "url": "https://github.com/xeplr/xeplr" },
+  "publishConfig": { "access": "public" },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0"
+  }
+}
