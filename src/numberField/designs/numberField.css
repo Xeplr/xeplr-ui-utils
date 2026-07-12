@@ -1,0 +1,66 @@
+.xeplr-numberfield {
+  font-family: system-ui, -apple-system, sans-serif;
+  color: #e0e0e0;
+}
+
+.xeplr-numberfield-row {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid #444;
+  border-radius: 6px;
+  background: #1a1a1a;
+  overflow: hidden;
+}
+
+.xeplr-numberfield-row:focus-within {
+  border-color: #646cff;
+  box-shadow: 0 0 0 2px rgba(100, 108, 255, 0.18);
+}
+
+.xeplr-numberfield-error .xeplr-numberfield-row {
+  border-color: #e25555;
+}
+
+.xeplr-numberfield-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: inherit;
+  padding: 9px 12px;
+  font-size: 14px;
+  min-width: 0;
+}
+
+.xeplr-numberfield-affix-select,
+.xeplr-numberfield-affix-static {
+  background: #232540;
+  border: none;
+  color: #b8bbe0;
+  padding: 0 12px;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  outline: none;
+}
+
+.xeplr-numberfield-affix-static {
+  cursor: default;
+}
+
+.xeplr-numberfield-row > .xeplr-numberfield-affix-select:first-child,
+.xeplr-numberfield-row > .xeplr-numberfield-affix-static:first-child {
+  border-right: 1px solid #444;
+}
+
+.xeplr-numberfield-row > .xeplr-numberfield-affix-select:last-child,
+.xeplr-numberfield-row > .xeplr-numberfield-affix-static:last-child {
+  border-left: 1px solid #444;
+}
+
+.xeplr-numberfield-error-text {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #e25555;
+}

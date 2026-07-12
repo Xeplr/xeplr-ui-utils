@@ -1,0 +1,60 @@
+.xeplr-datefield {
+  font-family: system-ui, -apple-system, sans-serif;
+  color: #e0e0e0;
+}
+
+.xeplr-datefield-row {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+}
+
+.xeplr-datefield-input {
+  flex: 1;
+  background: #1a1a1a;
+  border: 1px solid #444;
+  border-radius: 6px;
+  padding: 9px 12px;
+  color: inherit;
+  font-size: 14px;
+  outline: none;
+  color-scheme: dark;
+}
+
+.xeplr-datefield-input:focus {
+  border-color: #646cff;
+  box-shadow: 0 0 0 2px rgba(100, 108, 255, 0.18);
+}
+
+.xeplr-datefield-error .xeplr-datefield-input {
+  border-color: #e25555;
+}
+
+.xeplr-datefield-age {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: #232540;
+  border-radius: 6px;
+  padding: 4px 14px;
+  min-width: 90px;
+}
+
+.xeplr-datefield-age-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #888bbf;
+}
+
+.xeplr-datefield-age-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e0e0e0;
+}
+
+.xeplr-datefield-error-text {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #e25555;
+}
