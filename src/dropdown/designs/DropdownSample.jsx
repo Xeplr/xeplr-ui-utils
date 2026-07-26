@@ -32,9 +32,15 @@ function summary(selectedItems, mode, keys, placeholder) {
 export default function DropdownSample({
   mode, keys, searchable, placeholder, disabled,
   filteredItems, selectedItems, loading, error, query, isOpen, rootRef,
-  isSelected, toggle, selectItem, removeSelection, clearSelection, handleSearch
+  isSelected, toggle, selectItem, removeSelection, clearSelection, handleSearch,
+  canCreate, createLabel, creating, createError, createItem
 }) {
   var hasSelection = selectedItems.length > 0;
+  var trimmedQuery = (query || '').trim();
+  var exactMatch = filteredItems.some(function(item) {
+    return String(item[keys.name]).toLowerCase() === trimmedQuery.toLowerCase();
+  });
+  var showCreate = canCreate && trimmedQuery && !exactMatch;
 
   return (
     <div
@@ -84,8 +90,10 @@ export default function DropdownSample({
         {loading && <div className="xeplr-dropdown-state">Loading…</div>}
         {error && <div className="xeplr-dropdown-state xeplr-dropdown-state-error">{error}</div>}
 
-        {!loading && !error && filteredItems.length === 0 && (
-          <div className="xeplr-dropdown-state">No matches</div>
+        {!loading && !error && filteredItems.length === 0 && !showCreate && (
+          <div className="xeplr-dropdown-state">
+            {canCreate && !trimmedQuery ? 'Type a name to add' : 'No matches'}
+          </div>
         )}
 
         {!loading && !error && filteredItems.map(function(item) {
@@ -112,6 +120,25 @@ export default function DropdownSample({
             </div>
           );
         })}
+
+        {showCreate && (
+          <div
+            role="option"
+            className="xeplr-dropdown-row xeplr-dropdown-create"
+            onClick={function() { if (!creating) createItem(); }}
+          >
+            <span className="xeplr-dropdown-avatar xeplr-dropdown-create-plus">＋</span>
+            <span className="xeplr-dropdown-info">
+              <span className="xeplr-dropdown-name">
+                {creating ? 'Adding…' : (createLabel + ' “' + trimmedQuery + '”')}
+              </span>
+            </span>
+          </div>
+        )}
+
+        {createError && (
+          <div className="xeplr-dropdown-state xeplr-dropdown-state-error">{createError}</div>
+        )}
 
         {hasSelection && (
           <div className="xeplr-dropdown-footer">

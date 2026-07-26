@@ -1,0 +1,98 @@
+/* Uses @xeplr/ui-account's --xeplr-* theme tokens when available (apply
+   .xeplr-theme-light/-dark on an ancestor); falls back to the original dark
+   hex values when that stylesheet isn't loaded — same convention as
+   gridDisplayer.css. */
+
+.xeplr-data-import { display: flex; flex-direction: column; gap: 14px; color: var(--xeplr-text-primary, #e0e0e0); }
+
+.xeplr-data-import-dropzone {
+  display: block;
+  padding: 20px;
+  border: 1px dashed var(--xeplr-border-primary, #444);
+  border-radius: 8px;
+  background: var(--xeplr-bg-secondary, #222);
+  color: var(--xeplr-text-secondary, #999);
+  font-size: 13px;
+  text-align: center;
+  cursor: pointer;
+}
+.xeplr-data-import-dropzone input[type="file"] { display: none; }
+
+.xeplr-data-import-hint { font-size: 13px; color: var(--xeplr-text-secondary, #999); margin: 0; }
+
+.xeplr-data-import-alert { padding: 10px 12px; border-radius: 6px; font-size: 13px; }
+.xeplr-data-import-alert-error {
+  background: var(--xeplr-danger-bg, #3d1111);
+  color: var(--xeplr-danger, #ff6b6b);
+  border: 1px solid var(--xeplr-danger-border, #5a1a1a);
+}
+
+.xeplr-data-import-mappings { display: flex; flex-direction: column; }
+.xeplr-data-import-mapping-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--xeplr-border-secondary, #2a2a2a);
+}
+.xeplr-data-import-mapping-row:last-child { border-bottom: none; }
+.xeplr-data-import-mapping-check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 160px;
+  font-size: 13px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.xeplr-data-import-mapping-arrow { color: var(--xeplr-text-muted, #888); flex-shrink: 0; }
+.xeplr-data-import-mapping-row input[type="text"] {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--xeplr-input-border, #3a3a3a);
+  border-radius: 6px;
+  background: var(--xeplr-input-bg, #141414);
+  color: var(--xeplr-input-text, #e0e0e0);
+  font-size: 13px;
+  font-family: inherit;
+}
+.xeplr-data-import-mapping-row input[type="text"]:focus { outline: none; border-color: var(--xeplr-accent, #646cff); }
+.xeplr-data-import-mapping-row input[type="text"]:disabled { opacity: 0.5; }
+
+.xeplr-data-import-actions { display: flex; gap: 8px; }
+.xeplr-data-import-actions button {
+  padding: 9px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.xeplr-data-import-actions button:first-child { border: none; background: var(--xeplr-accent, #646cff); color: var(--xeplr-accent-text, #fff); }
+.xeplr-data-import-actions button:last-child { border: 1px solid var(--xeplr-border-primary, #444); background: var(--xeplr-bg-secondary, #232323); color: var(--xeplr-text-primary, #e0e0e0); }
+.xeplr-data-import-actions button:disabled { opacity: 0.6; cursor: default; }
+
+.xeplr-data-import-results { display: flex; flex-direction: column; }
+.xeplr-data-import-result-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 0;
+  font-size: 13px;
+  border-bottom: 1px solid var(--xeplr-border-secondary, #2a2a2a);
+}
+.xeplr-data-import-result-row:last-child { border-bottom: none; }
+.xeplr-data-import-result-ok { color: var(--xeplr-success, #6bcc6b); }
+.xeplr-data-import-result-fail { color: var(--xeplr-danger, #ff6b6b); }
+
+.xeplr-import-history { display: flex; flex-direction: column; gap: 10px; color: var(--xeplr-text-primary, #e0e0e0); }
+
+.xeplr-import-history-status { font-weight: 600; font-size: 12px; }
+.xeplr-import-history-status-completed { color: var(--xeplr-success, #6bcc6b); }
+.xeplr-import-history-status-failed { color: var(--xeplr-danger, #ff6b6b); }
+.xeplr-import-history-status-rolled-back { color: var(--xeplr-text-muted, #888); }
+.xeplr-import-history-error { color: var(--xeplr-text-secondary, #999); }

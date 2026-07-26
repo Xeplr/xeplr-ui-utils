@@ -1,0 +1,89 @@
+/* Uses @xeplr/ui-account's --xeplr-* theme tokens when available (apply
+   .xeplr-theme-light/-dark on an ancestor); falls back to the original dark
+   hex values when that stylesheet isn't loaded. */
+
+.xeplr-grid-displayer {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  color: var(--xeplr-text-primary, #e0e0e0);
+}
+
+/* ─── Toolbar ─── */
+
+.xeplr-grid-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.xeplr-grid-search {
+  flex: 1;
+  max-width: 320px;
+  padding: 8px 12px;
+  border: 1px solid var(--xeplr-input-border, #3a3a3a);
+  border-radius: 8px;
+  background: var(--xeplr-input-bg, #141414);
+  color: var(--xeplr-input-text, #e0e0e0);
+  font-size: 14px;
+}
+.xeplr-grid-search:focus { outline: none; border-color: var(--xeplr-accent, #646cff); }
+
+/* One dropdown carries both field + direction (e.g. "Name (A-Z)") — no
+   separate asc/desc icon button to keep the toolbar clean. */
+.xeplr-grid-sort-select {
+  padding: 7px 10px;
+  border: 1px solid var(--xeplr-input-border, #3a3a3a);
+  border-radius: 8px;
+  background: var(--xeplr-input-bg, #141414);
+  color: var(--xeplr-input-text, #e0e0e0);
+  font-size: 13px;
+}
+
+/* ─── Grid + tiles ───
+   Netflix-style: a hovered tile scales up and lifts above its neighbors —
+   z-index only bumps on hover so it doesn't otherwise disturb grid stacking. */
+
+.xeplr-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+  /* room for hovered tiles to scale up without clipping against the container edge */
+  padding: 6px;
+}
+
+.xeplr-grid-tile {
+  position: relative;
+  border-radius: 14px;
+  background: var(--xeplr-bg-tertiary, #1a1a1a);
+  border: 1px solid var(--xeplr-border-secondary, #2a2a2a);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  transform-origin: center;
+}
+
+.xeplr-grid-tile:hover {
+  transform: scale(1.08);
+  z-index: 5;
+  border-color: var(--xeplr-accent, #646cff);
+  box-shadow: var(--xeplr-shadow-lg, 0 12px 28px rgba(0, 0, 0, 0.45));
+}
+
+.xeplr-grid-tile-add {
+  border-style: dashed;
+  border-color: var(--xeplr-border-primary, #444);
+  display: grid;
+  place-items: center;
+  min-height: 120px;
+  color: var(--xeplr-text-muted, #888);
+}
+.xeplr-grid-tile-add:hover { border-color: var(--xeplr-accent, #646cff); color: var(--xeplr-text-primary, #e0e0e0); }
+
+.xeplr-grid-empty {
+  grid-column: 1 / -1;
+  padding: 32px;
+  text-align: center;
+  color: var(--xeplr-text-muted, #777);
+}

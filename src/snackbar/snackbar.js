@@ -2,10 +2,13 @@ var _container = null;
 var _queue = [];
 var _timer = null;
 
+// var(--xeplr-*, fallback) — picks up @xeplr/ui-account's theme tokens
+// (light/dark) when that stylesheet is loaded, falls back to these original
+// colors otherwise.
 var DESIGNS = {
-  success: { bg: '#059669', color: '#fff' },
-  error: { bg: '#dc2626', color: '#fff' },
-  default: { bg: '#2563eb', color: '#fff' }
+  success: { bg: 'var(--xeplr-success, #059669)', color: 'var(--xeplr-accent-text, #fff)' },
+  error: { bg: 'var(--xeplr-danger, #dc2626)', color: 'var(--xeplr-accent-text, #fff)' },
+  default: { bg: 'var(--xeplr-accent, #2563eb)', color: 'var(--xeplr-accent-text, #fff)' }
 };
 
 var DEFAULT_DURATION = 3000;

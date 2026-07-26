@@ -13,6 +13,33 @@ export { FileUploadSample } from './fileUpload/designs/index.js';
 // File Upload — ready-made page
 export { FileUploadPage } from './fileUpload/pages.jsx';
 
+// DataImport — model. Upload a file, map its parts (e.g. Excel sheets — or
+// the whole file, for CSV/JSON) to app-defined named targets, commit. The
+// app supplies onInspect/onCommit (its own upload + load endpoints); this
+// module only owns the file-pick -> mapping -> commit flow and UI.
+export { sanitizeTargetName, buildInitialMappings } from './dataImport/dataImport.js';
+
+// DataImport — controller
+export { useDataImportController } from './dataImport/useDataImportController.js';
+
+// DataImport — design validation
+export { DATA_IMPORT_RULES } from './dataImport/validateDesign.js';
+
+// DataImport — sample design
+export { DataImportSample } from './dataImport/designs/index.js';
+
+// DataImport — ready-made page
+export { DataImportPage } from './dataImport/pages.jsx';
+
+// ImportHistory — lists past import jobs (app-supplied onList) with a
+// Rollback action per row (app-supplied onRollback) — the read/undo side of
+// DataImportPage's write side, same file/model. Product-agnostic: the app
+// owns what "list" and "rollback" actually call.
+export { useImportHistoryController } from './dataImport/useImportHistoryController.js';
+export { IMPORT_HISTORY_RULES } from './dataImport/validateDesign.js';
+export { ImportHistorySample } from './dataImport/designs/index.js';
+export { ImportHistoryPage } from './dataImport/pages.jsx';
+
 // NumberField — model
 export {
   NUMBER_TYPES,
@@ -78,8 +105,30 @@ export { DropdownSample } from './dropdown/designs/index.js';
 // Dropdown — ready-made page
 export { DropdownPage } from './dropdown/pages.jsx';
 
+// GridDisplayer — model
+export { filterRows as filterGridRows, sortRows as sortGridRows } from './gridDisplayer/gridDisplayer.js';
+
+// GridDisplayer — controller
+export { useGridDisplayerController } from './gridDisplayer/useGridDisplayerController.js';
+
+// GridDisplayer — design validation
+export { GRID_DISPLAYER_RULES } from './gridDisplayer/validateDesign.js';
+
+// GridDisplayer — sample design
+export { GridDisplayerSample } from './gridDisplayer/designs/index.js';
+
+// GridDisplayer — ready-made page
+export { GridDisplayerPage } from './gridDisplayer/pages.jsx';
+
 // Snackbar
 export { raiseSnackbar } from './snackbar/snackbar.js';
+
+// Confirm
+export { raiseConfirm } from './confirm/confirm.js';
+
+// Theme — brand-neutral DEFAULT design tokens (chart + table), override-friendly.
+// Consumers pass overrides to resolveTheme(); overrides win, rest falls through.
+export { default as DEFAULT_THEME, resolveTheme, getThemeVariant, getChartOptions, deepMerge } from './theme/index.js';
 
 // Static data
 export { default as COUNTRIES } from './data/countries.json';

@@ -19,6 +19,10 @@ import {
  * @param {string} [props.placeholder='Select…']
  * @param {boolean} [props.searchable=true]
  * @param {boolean} [props.disabled]
+ * @param {(name:string) => Promise<*>} [props.onCreate] — create a new option from the typed
+ *   name via your API; return the created item (or its id) and it is auto-selected.
+ * @param {boolean} [props.allowCreate=true] — show the "add new" affordance when onCreate is set
+ * @param {string} [props.createLabel='Add'] — label prefix on the create row (e.g. 'Add company')
  */
 export function useDropdownController(props) {
   props = props || {};
@@ -30,12 +34,15 @@ export function useDropdownController(props) {
   var keys = useMemo(function() { return normalizeKeys(props.keys); }, [props.keys]);
   var source = props.fetchData ? 'dynamic' : 'static';
   var searchable = props.searchable !== false;
+  var canCreate = !!props.onCreate && props.allowCreate !== false;
 
   var [dynamicItems, setDynamicItems] = useState([]);
   var [loading, setLoading] = useState(false);
   var [error, setError] = useState('');
   var [query, setQuery] = useState('');
   var [isOpen, setIsOpen] = useState(false);
+  var [creating, setCreating] = useState(false);
+  var [createError, setCreateError] = useState('');
 
   var isControlled = props.value !== undefined;
   var initialSelection = useMemo(function() {
@@ -114,11 +121,56 @@ export function useDropdownController(props) {
   function close() { setIsOpen(false); setQuery(''); }
   function toggle() { isOpen ? close() : open(); }
 
-  function emit(nextSelection) {
-    var nextItems = pickSelected(items, nextSelection, keys.id);
+  function emit(nextSelection, itemsOverride) {
+    var nextItems = pickSelected(itemsOverride || items, nextSelection, keys.id);
     if (props.onChange) {
       props.onChange(mode === 'single' ? (nextSelection[0] || null) : nextSelection, nextItems);
     }
+  }
+
+  // Create a new option from the typed name via props.onCreate, then reload the
+  // (dynamic) options so the new row carries its real server id, and select it.
+  function createItem(rawName) {
+    var name = String(rawName != null ? rawName : query).trim();
+    if (!name || !props.onCreate) return Promise.resolve();
+    setCreating(true);
+    setCreateError('');
+    return Promise.resolve()
+      .then(function() { return props.onCreate(name); })
+      .then(function(created) {
+        if (source === 'dynamic' && props.fetchData) {
+          return Promise.resolve(props.fetchData()).then(function(data) {
+            var fresh = sortByKey(Array.isArray(data) ? data : [], keys.name);
+            setDynamicItems(fresh);
+            return { created: created, fresh: fresh };
+          });
+        }
+        return { created: created, fresh: items };
+      })
+      .then(function(ctx) {
+        var created = ctx.created;
+        var fresh = ctx.fresh;
+        var newId = null;
+        if (created && typeof created === 'object') newId = created[keys.id];
+        else if (created !== undefined && created !== null) newId = created;
+        if (newId == null) {
+          var match = fresh.filter(function(it) { return it[keys.name] === name; })[0];
+          if (match) newId = match[keys.id];
+        }
+        if (newId == null) return;   // created, but couldn't resolve an id — leave unselected
+        var next = mode === 'single'
+          ? [newId]
+          : (selection.indexOf(newId) === -1 ? selection.concat(newId) : selection);
+        if (!isControlled) setSelection(next);
+        emit(next, fresh);
+        if (mode === 'single') close();
+      })
+      .catch(function(err) {
+        setCreateError(err && err.message ? err.message : 'Failed to add');
+      })
+      .finally(function() {
+        setCreating(false);
+      });
   }
 
   function selectItem(itemId) {
@@ -173,6 +225,11 @@ export function useDropdownController(props) {
     source,
     keys,
     searchable,
+    canCreate,
+    createLabel: props.createLabel || 'Add',
+    creating,
+    createError,
+    createItem,
     placeholder: props.placeholder || 'Select…',
     disabled: !!props.disabled,
     items,
