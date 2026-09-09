@@ -84,6 +84,47 @@ export { DateFieldSample } from './dateField/designs/index.js';
 // DateField — ready-made page
 export { DateFieldPage } from './dateField/pages.jsx';
 
+// DateRange — model. One selection covering a quick preset, an explicit
+// range, or a single day/month/year; everything resolves to {from, to}.
+export {
+  QUICK_PRESETS,
+  parseSingleDate,
+  resolveQuickPreset,
+  resolveDateValue,
+  dateValueLabel,
+  dateValueIsSet
+} from './dateRange/dateRange.js';
+
+// DateRange — controller
+export { useDateRangeController } from './dateRange/useDateRangeController.js';
+
+// DateRange — design validation
+export { DATE_RANGE_RULES } from './dateRange/validateDesign.js';
+
+// DateRange — sample design
+export { DateRangeSample } from './dateRange/designs/index.js';
+
+// DateRange — ready-made page
+export { DateRangePage } from './dateRange/pages.jsx';
+
+// RangeField — model. Not DateRange (below) — that's a full quick/range/
+// single POPOVER picker; this is just a From+To pair rendered as one field,
+// for a caller that already knows it wants an explicit range and has
+// nowhere to put a popover.
+export { RANGE_TYPES, emptyRange, normalizeRange, rangeIsSet } from './rangeField/rangeField.js';
+
+// RangeField — controller
+export { useRangeFieldController } from './rangeField/useRangeFieldController.js';
+
+// RangeField — design validation
+export { RANGE_FIELD_RULES } from './rangeField/validateDesign.js';
+
+// RangeField — sample design
+export { RangeFieldSample } from './rangeField/designs/index.js';
+
+// RangeField — ready-made page
+export { RangeFieldPage } from './rangeField/pages.jsx';
+
 // Dropdown — model
 export {
   DROPDOWN_MODES,
@@ -124,14 +165,35 @@ export { GridDisplayerPage } from './gridDisplayer/pages.jsx';
 export { raiseSnackbar } from './snackbar/snackbar.js';
 
 // Confirm
-export { raiseConfirm } from './confirm/confirm.js';
+export { raiseConfirm, raiseChoice } from './confirm/confirm.js';
 
 // Theme — brand-neutral DEFAULT design tokens (chart + table), override-friendly.
 // Consumers pass overrides to resolveTheme(); overrides win, rest falls through.
-export { default as DEFAULT_THEME, resolveTheme, getThemeVariant, getChartOptions, deepMerge } from './theme/index.js';
+export { default as DEFAULT_THEME, resolveTheme, getThemeVariant, getChartOptions, inputStyleVars, deepMerge } from './theme/index.js';
 
 // Static data
 export { default as COUNTRIES } from './data/countries.json';
 import _statesData from './data/states.json';
 export var STATES = _statesData.STATES;
 export var STATES_IN = _statesData.STATES_IN;
+
+// TextField — the plain text input, its multiline and search shapes.
+export { TEXT_TYPES, toValue, normalise, validate, remaining } from './textField/textField.js';
+export { useTextFieldController } from './textField/useTextFieldController.js';
+export { TEXT_FIELD_RULES } from './textField/validateDesign.js';
+export { TextFieldSample } from './textField/designs/index.js';
+export { TextFieldPage } from './textField/pages.jsx';
+
+// ── Progress notifier ────────────────────────────────────────────────────
+//
+// A small moving bar and a line of text, driven by an event KEY the back end
+// chooses. Hidden until an event for that key arrives, so it is safe to mount
+// on anything; visible while the work says it is continuing.
+//
+// An app attaches its own stream ONCE with attachProgressSource, adapting
+// whatever it publishes into { key, continue, status?, data }. This package
+// knows nothing about SSE — see progressSource.js for why the sentence is
+// built on the client rather than sent as prose.
+export { attachProgressSource, progressSourceAttached, subscribeToProgress,
+         describeProgress, describeComplete } from './progress/progressSource.js';
+export { default as ProgressNotifier } from './progress/ProgressNotifier.jsx';

@@ -1,0 +1,73 @@
+/* Progress notifier. Namespaced xpn-* so it cannot collide with a host app's
+   own rules, and self-contained so mounting it never depends on the host
+   having loaded some other stylesheet first.
+
+   var(--xeplr-*, fallback) throughout — picks up @xeplr/ui-account's theme
+   tokens when that stylesheet is present, and looks right without it. */
+
+.xpn {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  /* Zero height when it renders nothing: the component returns null while
+     idle, and this keeps the visible state from adding margin a host did not
+     ask for. */
+  margin: 0;
+}
+
+.xpn-text {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--xeplr-muted, #6b7280);
+  /* A driver's error is one long line with no spaces in it more often than
+     not, and must not stretch whatever it is sitting in. */
+  overflow-wrap: anywhere;
+}
+
+.xpn--error .xpn-text { color: var(--xeplr-danger, #c2372e); }
+.xpn--complete .xpn-text { color: var(--xeplr-success, #059669); }
+
+/* ── the bar ─────────────────────────────────────────────────────────────
+
+   INDETERMINATE, always. Nothing this reports on can honestly say how far
+   through it is — a GROUP BY over twenty million rows knows only that it is
+   running — so the movement says "alive" and the text beside it carries what
+   is actually true. A bar creeping toward 60% would be an invented number. */
+
+.xpn-bar {
+  position: relative;
+  width: 100%;
+  height: 3px;
+  border-radius: 2px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--xeplr-accent, #2563eb) 18%, transparent);
+}
+
+.xpn-bar span {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  width: 40%;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--xeplr-accent, #2563eb);
+  animation: xpn-slide 1.1s ease-in-out infinite;
+}
+
+@keyframes xpn-slide {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(250%); }
+}
+
+/* Motion is the only thing carrying "still going" here, so it is not simply
+   removed — it is replaced with a filled, dimmed bar that still reads as a
+   state rather than as a finished one. */
+@media (prefers-reduced-motion: reduce) {
+  .xpn-bar span {
+    animation: none;
+    width: 100%;
+    opacity: 0.55;
+  }
+}

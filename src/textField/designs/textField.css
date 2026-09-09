@@ -1,0 +1,92 @@
+/* Every value here comes from a --xeplr-input-* custom property, with the
+   shipped default as its fallback. That is what makes "border: bottom only"
+   a theme setting rather than a fork of this stylesheet — see the `input`
+   section of default.theme.json and inputStyleVars(). */
+
+/* The gap is the control's OWN spacing when it stands alone in a form. Inside
+   a grid the row owns the spacing, so a host can zero it — see .dsh-prop. */
+.xeplr-textfield { display: block; margin-bottom: var(--xeplr-input-text-gap, 12px); }
+
+/* The label takes the FULL Font block, so anything the theme accepts for it
+   actually renders — underline included. A property the theme takes and the
+   stylesheet ignores is a setting that silently does nothing. */
+.xeplr-textfield-label {
+  display: block;
+  font-family: var(--xeplr-input-text-label-family, inherit);
+  font-size: var(--xeplr-input-text-label-size, 11px);
+  font-weight: var(--xeplr-input-text-label-weight, 600);
+  font-style: var(--xeplr-input-text-label-style, normal);
+  font-variant: var(--xeplr-input-text-label-variant, normal);
+  color: var(--xeplr-input-text-label-color, #6b6a63);
+  line-height: var(--xeplr-input-text-label-line-height, 1.3);
+  letter-spacing: var(--xeplr-input-text-label-spacing, .03em);
+  text-align: var(--xeplr-input-text-label-align, left);
+  text-transform: var(--xeplr-input-text-label-transform, uppercase);
+  text-decoration: var(--xeplr-input-text-label-decoration, none);
+  opacity: var(--xeplr-input-text-label-opacity, 1);
+  margin-bottom: 5px;
+}
+.xeplr-textfield-required { color: var(--xeplr-input-text-invalid-color, #c2372e); }
+
+.xeplr-textfield-control { position: relative; display: flex; }
+
+.xeplr-textfield-input {
+  width: 100%;
+  font: inherit;
+  font-size: var(--xeplr-input-text-font-size, 12.5px);
+  color: var(--xeplr-input-text-color, #1a1a19);
+  background: var(--xeplr-input-text-bg, #fff);
+  padding: var(--xeplr-input-text-padding, 7px 9px);
+  /* Each edge on its own, so a theme can keep one and drop three. */
+  border-style: var(--xeplr-input-text-border-style, solid);
+  border-color: var(--xeplr-input-text-border-color, #e2e1d9);
+  border-top-width: var(--xeplr-input-text-border-top, 1px);
+  border-right-width: var(--xeplr-input-text-border-right, 1px);
+  border-bottom-width: var(--xeplr-input-text-border-bottom, 1px);
+  border-left-width: var(--xeplr-input-text-border-left, 1px);
+  border-radius: var(--xeplr-input-text-radius, 6px);
+  transition: border-color .12s ease, box-shadow .12s ease;
+}
+.xeplr-textfield-input:hover:not(:disabled) {
+  border-color: var(--xeplr-input-text-border-hover, #b6b4a8);
+}
+.xeplr-textfield-input:focus {
+  outline: none;
+  border-color: var(--xeplr-input-text-border-focus, #2563eb);
+  box-shadow: 0 0 0 var(--xeplr-input-text-ring, 3px) var(--xeplr-input-text-ring-color, rgba(37, 99, 235, .15));
+}
+.xeplr-textfield-input:disabled { opacity: .55; cursor: not-allowed; }
+.xeplr-textfield-input::placeholder { color: var(--xeplr-input-text-placeholder, #9d9b92); }
+
+textarea.xeplr-textfield-input { resize: vertical; min-height: 64px; }
+
+.xeplr-textfield-invalid .xeplr-textfield-input {
+  border-color: var(--xeplr-input-text-invalid-color, #c2372e);
+}
+.xeplr-textfield-invalid .xeplr-textfield-input:focus {
+  box-shadow: 0 0 0 var(--xeplr-input-text-ring, 3px) var(--xeplr-input-text-invalid-ring, rgba(194, 55, 46, .15));
+}
+
+.xeplr-textfield-clear {
+  position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+  border: none; background: none; cursor: pointer;
+  color: var(--xeplr-input-text-label-color, #6b6a63);
+  font-size: 11px; padding: 2px 4px; border-radius: 4px;
+}
+.xeplr-textfield-clear:hover { background: rgba(0, 0, 0, .06); }
+
+.xeplr-textfield-help,
+.xeplr-textfield-error,
+.xeplr-textfield-count {
+  margin: 5px 0 0;
+  font-size: var(--xeplr-input-text-help-size, 11px);
+  line-height: 1.5;
+}
+.xeplr-textfield-help {
+  font-family: var(--xeplr-input-text-help-family, inherit);
+  font-style: var(--xeplr-input-text-help-style, normal);
+  text-decoration: var(--xeplr-input-text-help-decoration, none);
+  color: var(--xeplr-input-text-help-color, #6b6a63);
+}
+.xeplr-textfield-error { color: var(--xeplr-input-text-invalid-color, #c2372e); }
+.xeplr-textfield-count { color: var(--xeplr-input-text-label-color, #6b6a63); text-align: right; }

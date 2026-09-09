@@ -1,0 +1,26 @@
+/* Namespaced xeplr-rangefield-* so a host's own styles can't collide with it. */
+.xeplr-rangefield {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.xeplr-rangefield-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 160px;
+}
+.xeplr-rangefield-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--xeplr-muted, #6b7280);
+}
+/* Purely a visual hint that these two boxes are one idea, not a real
+   separator — hidden from assistive tech via aria-hidden in the design. */
+.xeplr-rangefield-sep {
+  padding-bottom: 10px;
+  color: var(--xeplr-muted-2, #9aa1ad);
+  font-size: 13px;
+}

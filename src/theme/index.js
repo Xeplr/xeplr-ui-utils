@@ -71,5 +71,85 @@ export function getChartOptions(variantName, overrides) {
   return family ? { ...chart, fontFamily: family } : { ...chart };
 }
 
+/**
+ * Theme → the CSS custom properties an input control reads.
+ *
+ * One control at a time, because the sections are separate: `input.text` and
+ * `input.select` are the same shape and need not hold the same values.
+ *
+ * Every edge is emitted on its own — border-top-width, -right, -bottom, -left
+ * — so "bottom rule only" is `{ border: { top: false, left: false, right:
+ * false, bottom: true } }` and not a fork of the stylesheet.
+ *
+ *   <div style={inputStyleVars('text', overrides)}>…</div>
+ *
+ * @param {'text'|'select'|'number'|'date'} control
+ * @param {object} [overrides]     consumer theme overrides
+ * @param {string} [variantName]
+ * @returns {object} { '--xeplr-input-text-…': value }
+ */
+export function inputStyleVars(control, overrides, variantName) {
+  const theme = resolveTheme(overrides);
+  const variant = theme.themes[variantName] || theme.themes[theme.default];
+  const input = (variant && variant.input && variant.input[control]) || {};
+  const p = '--xeplr-input-' + control;
+  const border = input.border || {};
+  const font = input.font || {};
+  const label = input.label || {};
+  const ring = input.focusRing || {};
+  const invalid = input.invalid || {};
+
+  // An edge that is false is 0 — not "absent", which would fall through to the
+  // stylesheet's own default and quietly put the border back.
+  const edge = (on) => (on === false ? '0' : (border.width || '1px'));
+
+  const out = {
+    [p + '-gap']: input.gap,
+    [p + '-padding']: input.padding,
+    [p + '-bg']: input.background,
+    [p + '-color']: font.color,
+    [p + '-font-size']: font.size,
+    [p + '-placeholder']: font.placeholder,
+    [p + '-border-style']: border.style,
+    [p + '-border-color']: border.color,
+    [p + '-border-hover']: border.hover,
+    [p + '-border-focus']: border.focus,
+    [p + '-border-top']: edge(border.top),
+    [p + '-border-right']: edge(border.right),
+    [p + '-border-bottom']: edge(border.bottom),
+    [p + '-border-left']: edge(border.left),
+    [p + '-radius']: border.radius,
+    // The label carries the FULL Font block — the same shape
+    // @xeplr/ui-charts' type.js defines, so `underline` means the same thing
+    // on a field label as on a chart's. Every one of them is emitted, because
+    // a property the theme accepts and the stylesheet ignores is a setting
+    // that silently does nothing.
+    [p + '-label-family']: label.family,
+    [p + '-label-size']: label.size,
+    [p + '-label-weight']: label.weight,
+    [p + '-label-style']: label.style,
+    [p + '-label-variant']: label.variant,
+    [p + '-label-color']: label.color,
+    [p + '-label-line-height']: label.lineHeight,
+    [p + '-label-spacing']: label.letterSpacing,
+    [p + '-label-align']: label.align,
+    [p + '-label-transform']: label.transform,
+    [p + '-label-decoration']: label.decoration,
+    [p + '-label-opacity']: label.opacity,
+    [p + '-help-family']: (input.help || {}).family,
+    [p + '-help-size']: (input.help || {}).size,
+    [p + '-help-color']: (input.help || {}).color,
+    [p + '-help-style']: (input.help || {}).style,
+    [p + '-help-decoration']: (input.help || {}).decoration,
+    [p + '-ring']: ring.width,
+    [p + '-ring-color']: ring.color,
+    [p + '-invalid-color']: invalid.color,
+    [p + '-invalid-ring']: invalid.ring
+  };
+  // Undefined would render as the string "undefined" in a style object.
+  Object.keys(out).forEach((k) => { if (out[k] === undefined) delete out[k]; });
+  return out;
+}
+
 export { defaultTheme };
 export default defaultTheme;

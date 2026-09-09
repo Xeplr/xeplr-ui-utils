@@ -28,5 +28,8 @@
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0",
     "@xeplr/ui-table": "^1.0.0"
+  },
+  "scripts": {
+    "test": "for f in test/*.test.js; do node \"$f\" || exit 1; done"
   }
 }
