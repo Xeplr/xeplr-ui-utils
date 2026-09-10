@@ -1,6 +1,6 @@
 {
   "name": "@xeplr/ui-utils",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "UI utility components: file upload with progress, snackbar, static data (countries/states)",
   "type": "module",
   "main": "src/index.js",
