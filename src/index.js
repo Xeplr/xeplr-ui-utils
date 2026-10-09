@@ -92,7 +92,8 @@ export {
   resolveQuickPreset,
   resolveDateValue,
   dateValueLabel,
-  dateValueIsSet
+  dateValueIsSet,
+  rangeProblem
 } from './dateRange/dateRange.js';
 
 // DateRange — controller

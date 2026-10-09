@@ -67,3 +67,15 @@
 }
 .xeplr-daterange-suggest button:hover { background: var(--xeplr-hover, #f4f5f8); }
 .xeplr-daterange-suggest-note { font-size: 11px; color: var(--xeplr-muted, #6b7280); }
+
+/* Apply — a typed range (or date) reaches the host only through this, or
+   Enter. Disabled while there is nothing new to apply, or it is not valid. */
+.xeplr-daterange-actions { display: flex; justify-content: flex-end; margin-top: 8px; }
+.xeplr-daterange-apply {
+  padding: 5px 14px; border-radius: 6px; cursor: pointer;
+  font-size: 12px; font-weight: 600;
+  border: 1px solid var(--xeplr-accent, #4f5fd6);
+  background: var(--xeplr-accent, #4f5fd6);
+  color: var(--xeplr-on-accent, #fff);
+}
+.xeplr-daterange-apply:disabled { opacity: 0.45; cursor: default; }

@@ -271,3 +271,22 @@ export function dateValueLabel(value) {
 export function dateValueIsSet(value, now) {
   return Boolean(resolveDateValue(value, now || new Date()))
 }
+
+/**
+ * Why a typed range cannot be applied yet, or null when it can.
+ *
+ * A browser date input holds a COMPLETE date while the year is still being
+ * typed ("2" is 0002-…), so a range is never taken as you type — it is
+ * applied (the Apply button, or Enter), and this is what Apply asks first.
+ * One side empty is fine: "everything since April" is a real range.
+ *
+ * @param {{from?: string, to?: string}} draft - ISO dates, either may be empty
+ * @returns {string|null}
+ */
+export function rangeProblem(draft) {
+  var from = (draft && draft.from) || '';
+  var to = (draft && draft.to) || '';
+  if (!from && !to) return 'Choose a From or a To date';
+  if (from && to && from > to) return 'From is after To';
+  return null;
+}
