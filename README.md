@@ -118,7 +118,7 @@ export default function SelectCompany() {
 | `useNumberFieldController(props)` | NumberFieldPage props | `type, raw, numeric, error, placeholder, disabled, decimals, formatDisplay, affix {list, selected, position, labelKey, valueKey} \| null, handleNumberChange, handleAffixChange, handleBlur` |
 | `useTextFieldController(props)` | TextFieldPage props | `type, raw, error, remaining, placeholder, disabled, required, maxLength, rows, label, help, handleChange, handleBlur, handleKeyDown, handleClear` |
 | `useFileUploadController(options)` | FileUploadPage props | `files, uploading, progress, error, result, dragOver, inputRef, handleChange, handleDragOver, handleDragLeave, handleDrop, handleUpload, openFilePicker, removeFile(i), clear, allowedTypes, maxSize, maxFiles` |
-| `useDataImportController(options)` | DataImportPage props | `file, inspecting, inspected, mappings, committing, results, error, handleFileChange, updateMapping(i, patch), handleCommit, reset, accept, targetLabel` |
+| `useDataImportController(options)` | DataImportPage props | `file, inspecting, inspected, mappings, committing, results, error, handleFileChange, updateMapping(i, patch), setFix(i, key, on), checksOf(part), handleCommit, reset, accept, targetLabel` |
 | `useImportHistoryController(options)` | ImportHistoryPage props | `jobs, loading, error, rollingBackId, deletingId, reload, handleRollback(job), handleDelete(job)` |
 | `useGridDisplayerController(props)` | GridDisplayerPage props | `query, setQuery, sortFields, sortValue, setSortValue, displayRows, tileFormatComponent, onSelect, onAddNew` |
 | `useColorPickerController(props)` | ColorPickerPage props | `label, value, hex, opacity, swatches [{color, selected}], custom, allowNone, allowOpacity, previewText, pick(hex), setOpacity(0–100), clear` |
@@ -146,7 +146,7 @@ export default function SelectCompany() {
 | `toggleOpen`, `initialOpen` | `(open, key, multiple?) → keys`, `(items, initial?, multiple?) → keys` | Which expanders are open |
 | `toggleBranch`, `decorateTree` | `(open, parentKey, key) → open`, `(nodes, open) → nodes` | Which branch of a settings tree is open at each level; `open` is `{ [parentKey]: key }`, the root's parent `''` |
 | `filterGridRows`, `sortGridRows` | `(rows, query, fields)`, `(rows, field, 'asc'\|'desc')` | Grid search and sort. An array field matches if any entry matches. |
-| `sanitizeTargetName`, `buildInitialMappings` | `(name) → string`, `({ parts?, originalName? }) → [{ part, target, include }]` | Data import mapping |
+| `sanitizeTargetName`, `buildInitialMappings`, `checksFor` | `(name) → string`, `({ parts?, originalName?, checks? }) → [{ part, target, include, fixes }]`, `(inspectResult, part) → checks[]` | Data import mapping |
 | `configureUpload`, `uploadFile` | `({ url, headers, getHeaders })`, `(files, { url, fieldName, extraData, onProgress }) → Promise` | Multipart upload over XHR |
 | `attachProgressSource`, `progressSourceAttached`, `subscribeToProgress`, `describeProgress`, `describeComplete` | `(subscribe)`, `() → boolean`, `(key, handler) → unsubscribe`, `(data, noun?)`, `(data, noun?)` | The progress event source and its sentences |
 
@@ -294,12 +294,14 @@ configureUpload({ url: '/uploads', getHeaders: () => ({ Authorization: 'Bearer '
 
 | prop | type | meaning |
 |---|---|---|
-| `onInspect` | `(filePath, file) => Promise<{ format, parts? }>` | **Required.** Say what an uploaded file contains. `parts` holds, for example, an Excel workbook's sheet names. |
-| `onCommit` | `(filePath, [{ part, target }], { originalName }) => Promise<{ results } \| results[]>` | **Required.** Load the included parts into their targets. |
+| `onInspect` | `(filePath, file) => Promise<{ format, parts?, checks? }>` | **Required.** Say what an uploaded file contains. `parts` holds, for example, an Excel workbook's sheet names. `checks` says what is wrong with a part before it is loaded — see below. |
+| `onCommit` | `(filePath, [{ part, target, fixes }], { originalName }) => Promise<{ results } \| results[]>` | **Required.** Load the included parts into their targets. `fixes` is the person's choice for each fix the checks offered. |
 | `accept` | `string` | The file input's `accept` attribute, for example `'.csv,.json,.xlsx,.xls'` |
 | `targetLabel` | `string` | Placeholder for the target name (default `'Target'`) |
 
 The file is sent through this package's own `uploadFile()` to the URL set by `configureUpload`, not through a prop. That keeps the component free of app-specific upload wiring. The apps point it at `@xeplr/base-apis`' generic upload route. The upload response must include `filePath`. With `parts`, each part becomes a row (included by default) whose target is `sanitizeTargetName(part)`. Without `parts`, there is one row named after the file. Result rows show `target (part)` and then `rows` + " rows", "Done", or `error`, depending on `success`.
+
+**Checks, before anything is loaded.** `onInspect` may return `checks: { [part]: [{ key, message, fixLabel?, fixDefault?, examples? }] }` (the key `''` for a one-unit file). Each shows under its part as a warning with its message and examples. One with a `fixLabel` offers the fix as a checkbox, on unless `fixDefault: false`; the choice reaches `onCommit` as `fixes[key]`. A result row's `note` is shown under it — what a fix did. The component knows no particular check: the app decides what to look for and what its fix means (BI: rows pasted into one cell, recovered).
 
 `sanitizeTargetName('Sales 2024.xlsx')` returns `'sales_2024'`. It lowercases, drops the extension, turns runs of non-`[a-z0-9_]` characters into `_`, trims `_` from both ends, and falls back to `'table'`.
 

@@ -1,16 +1,18 @@
 import { useState } from 'react';
 import { uploadFile } from '../fileUpload/uploadFile.js';
-import { buildInitialMappings } from './dataImport.js';
+import { buildInitialMappings, checksFor } from './dataImport.js';
 
 /**
  * @param {object} options
  * @param {string} [options.accept] - file input accept attribute, e.g. '.csv,.json,.xlsx,.xls'
  * @param {string} [options.targetLabel='Target'] - placeholder/label for the target-name field
- * @param {(filePath: string, file: File) => Promise<{format: string, parts?: string[]}>} options.onInspect
+ * @param {(filePath: string, file: File) => Promise<{format: string, parts?: string[], checks?: object}>} options.onInspect
  *   - required. App-supplied: given a file ALREADY uploaded (see below), what
  *     does it contain? (format, and for a multi-part file like an Excel
  *     workbook, its part/sheet names).
- * @param {(filePath: string, mappings: {part: string|null, target: string}[], meta: {originalName: string}) => Promise<{results: object[]}>} options.onCommit
+ * @param {(filePath: string, mappings: {part: string|null, target: string, fixes: object}[], meta: {originalName: string}) => Promise<{results: object[]}>} options.onCommit
+ *   (each mapping's `fixes` is the person's choice for each fix the inspect
+ *   step's `checks` offered — see checksFor in dataImport.js)
  *   - required. App-supplied: load the included parts into their targets.
  *     meta.originalName is the picked file's own name (not the server-side
  *     path) — pass it through if the app wants it recorded (e.g. import
@@ -61,6 +63,15 @@ export function useDataImportController(options = {}) {
     }
   }
 
+  // A fix the inspect step offered, switched on or off for one part.
+  function setFix(index, key, on) {
+    setMappings(function(prev) {
+      var next = prev.slice();
+      next[index] = Object.assign({}, next[index], { fixes: Object.assign({}, next[index].fixes, { [key]: on }) });
+      return next;
+    });
+  }
+
   function updateMapping(index, patch) {
     setMappings(function(prev) {
       var next = prev.slice();
@@ -75,7 +86,7 @@ export function useDataImportController(options = {}) {
     setCommitting(true);
     setError('');
     try {
-      var payload = included.map(function(m) { return { part: m.part, target: m.target }; });
+      var payload = included.map(function(m) { return { part: m.part, target: m.target, fixes: m.fixes || {} }; });
       var res = await options.onCommit(inspected.filePath, payload, { originalName: inspected.originalName });
       setResults((res && res.results) || res || []);
     } catch (err) {
@@ -87,7 +98,8 @@ export function useDataImportController(options = {}) {
 
   return {
     file, inspecting, inspected, mappings, committing, results, error,
-    handleFileChange, updateMapping, handleCommit, reset,
+    handleFileChange, updateMapping, setFix, handleCommit, reset,
+    checksOf: function(part) { return checksFor(inspected, part); },
     accept: options.accept,
     targetLabel: options.targetLabel || 'Target'
   };

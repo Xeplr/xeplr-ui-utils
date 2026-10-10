@@ -96,3 +96,22 @@
 .xeplr-import-history-status-failed { color: var(--xeplr-danger, #ff6b6b); }
 .xeplr-import-history-status-rolled-back { color: var(--xeplr-text-muted, #888); }
 .xeplr-import-history-error { color: var(--xeplr-text-secondary, #999); }
+
+/* What the inspect step found in a part — on its own line under the part,
+   with the fix (when one is offered) as a checkbox the person decides. */
+.xeplr-data-import-mapping-row { flex-wrap: wrap; }
+.xeplr-data-import-check {
+  flex-basis: 100%;
+  margin: 2px 0 4px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--xeplr-warning, #a86a00);
+  background: var(--xeplr-warning-bg, rgba(168, 106, 0, 0.08));
+  color: var(--xeplr-text-primary, #e0e0e0);
+  font-size: 13px;
+}
+.xeplr-data-import-check-message { margin: 0 0 6px; line-height: 1.45; }
+.xeplr-data-import-check-fix { display: flex; align-items: center; gap: 8px; font-weight: 600; cursor: pointer; }
+.xeplr-data-import-check-examples { margin: 6px 0 0; padding-left: 18px; font-size: 12px; color: var(--xeplr-text-muted, #888); }
+.xeplr-data-import-result-note { flex-basis: 100%; font-size: 12px; color: var(--xeplr-text-muted, #888); }
+.xeplr-data-import-result-row { flex-wrap: wrap; }
