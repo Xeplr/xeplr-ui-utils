@@ -198,3 +198,22 @@ export { TextFieldPage } from './textField/pages.jsx';
 export { attachProgressSource, progressSourceAttached, subscribeToProgress,
          describeProgress, describeComplete } from './progress/progressSource.js';
 export { default as ProgressNotifier } from './progress/ProgressNotifier.jsx';
+
+// ColorPicker — one CSS colour, '#RRGGBB' solid or '#RRGGBBAA' see-through:
+// swatches, "no colour", a custom colour, opacity, and a live preview.
+export { DEFAULT_SWATCHES, parseColor, formatColor, sameHue } from './colorPicker/colorPicker.js';
+export { useColorPickerController } from './colorPicker/useColorPickerController.js';
+export { COLOR_PICKER_RULES } from './colorPicker/validateDesign.js';
+export { ColorPickerSample } from './colorPicker/designs/index.js';
+export { ColorPickerPage } from './colorPicker/pages.jsx';
+
+// Panel — the parts of a settings panel: section cards (PanelSection), rows
+// with the label left and help under the control (PanelField), and
+// expanders, opened one at a time unless `multiple`; and a settings tree —
+// groups as cards, branches on a rail, one open per level.
+export { toggleOpen, initialOpen, toggleBranch, decorateTree } from './panel/panel.js';
+export { useExpandersController } from './panel/useExpandersController.js';
+export { useSettingsTreeController } from './panel/useSettingsTreeController.js';
+export { EXPANDERS_RULES, SETTINGS_TREE_RULES } from './panel/validateDesign.js';
+export { PanelSection, PanelField, ExpandersSample, SettingsTreeSample } from './panel/designs/index.js';
+export { ExpandersPage, SettingsTreePage } from './panel/pages.jsx';

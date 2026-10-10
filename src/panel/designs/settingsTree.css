@@ -1,0 +1,69 @@
+/* A settings tree: groups as cards, branches on a dotted rail. Uses the
+   --xeplr-* theme tokens; falls back to light values standalone. */
+
+.xeplr-tree { display: flex; flex-direction: column; gap: 10px; }
+
+.xeplr-tree-group {
+  position: relative;
+  border: 1px solid var(--xeplr-border-secondary, #eceef3);
+  border-radius: 12px;
+  background: var(--xeplr-bg-primary, #fff);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, .04);
+  overflow: hidden;
+}
+.xeplr-tree-group.open { box-shadow: 0 2px 10px rgba(16, 24, 40, .06); }
+/* The accent bar down the left of the open group. */
+.xeplr-tree-group.open::before {
+  content: ''; position: absolute; left: 0; top: 0; height: 52px; width: 3px;
+  background: var(--xeplr-accent, #3b5bdb); border-radius: 0 3px 3px 0;
+}
+
+.xeplr-tree-head {
+  width: 100%; display: flex; align-items: center; gap: 12px;
+  border: 0; background: transparent; cursor: pointer; text-align: left;
+  font: inherit; color: var(--xeplr-text-primary, #111827);
+}
+.xeplr-tree-group > .xeplr-tree-head { min-height: 52px; padding: 8px 14px 8px 12px; }
+.xeplr-tree-group > .xeplr-tree-head:hover { background: var(--xeplr-bg-secondary, #f8f9fb); }
+.xeplr-tree-group.open > .xeplr-tree-head { background: var(--xeplr-accent-soft, #edf2ff); }
+.xeplr-tree-group > .xeplr-tree-head .xeplr-tree-title { font-size: 14px; font-weight: 600; }
+
+.xeplr-tree-tile {
+  width: 32px; height: 32px; flex-shrink: 0; border-radius: 8px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--xeplr-accent-soft, #edf2ff); color: var(--xeplr-accent, #3b5bdb);
+}
+.xeplr-tree-group.open .xeplr-tree-tile { background: var(--xeplr-bg-primary, #fff); }
+.xeplr-tree-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.xeplr-tree-count {
+  font-size: 11.5px; font-weight: 600; padding: 1px 8px; border-radius: 999px;
+  background: var(--xeplr-accent-soft, #edf2ff); color: var(--xeplr-accent, #3b5bdb);
+}
+.xeplr-tree-chevron { margin-left: auto; flex-shrink: 0; color: var(--xeplr-text-muted, #6b7280); transition: transform .15s; }
+.xeplr-tree-node.open > .xeplr-tree-head .xeplr-tree-chevron { transform: rotate(90deg); color: var(--xeplr-accent, #3b5bdb); }
+
+.xeplr-tree-body { padding: 4px 8px 8px; }
+.xeplr-tree-content { padding: 8px 6px; display: flex; flex-direction: column; gap: 10px; }
+
+/* Branches: a dotted rail on the left, a dot per branch on it. */
+.xeplr-tree-children { position: relative; padding-left: 26px; }
+.xeplr-tree-children::before {
+  content: ''; position: absolute; left: 11px; top: 14px; bottom: 14px;
+  border-left: 1px dashed var(--xeplr-border-primary, #d9dde5);
+}
+.xeplr-tree-item + .xeplr-tree-item { border-top: 1px solid var(--xeplr-border-secondary, #f0f1f4); }
+.xeplr-tree-item > .xeplr-tree-head { position: relative; min-height: 42px; padding: 6px 10px; border-radius: 8px; }
+.xeplr-tree-item > .xeplr-tree-head:hover { background: var(--xeplr-bg-secondary, #f6f7f9); }
+.xeplr-tree-item.open > .xeplr-tree-head { background: var(--xeplr-accent-soft, #edf2ff); }
+.xeplr-tree-item > .xeplr-tree-head .xeplr-tree-title { font-size: 13.5px; font-weight: 500; }
+.xeplr-tree-dot {
+  position: absolute; left: -18px; top: 50%; width: 7px; height: 7px; margin-top: -3.5px;
+  border-radius: 50%; background: var(--xeplr-border-primary, #c9ced8);
+}
+.xeplr-tree-item.open > .xeplr-tree-head .xeplr-tree-dot {
+  width: 9px; height: 9px; margin-top: -4.5px; left: -19px; background: var(--xeplr-accent, #3b5bdb);
+}
+.xeplr-tree-icon { display: inline-flex; color: var(--xeplr-text-secondary, #4b5563); flex-shrink: 0; }
+.xeplr-tree-item.open > .xeplr-tree-head .xeplr-tree-icon,
+.xeplr-tree-item.open > .xeplr-tree-head .xeplr-tree-title { color: var(--xeplr-accent, #3b5bdb); }
+.xeplr-tree-item > .xeplr-tree-body { padding: 4px 0 8px; }

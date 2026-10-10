@@ -1,0 +1,36 @@
+/* Measured against its own width, not the window's: a picker in a narrow
+   side panel puts its preview under the swatches instead of beside them. */
+.xeplr-colorpicker-wrap { container-type: inline-size; }
+.xeplr-colorpicker { display: flex; gap: 16px; align-items: stretch; }
+.xeplr-colorpicker-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.xeplr-colorpicker-label { font-size: 11.5px; color: var(--xeplr-text-muted, #6b7280); }
+.xeplr-colorpicker-swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+.xeplr-colorpicker-swatch {
+  position: relative; width: 28px; height: 28px; border-radius: 8px; padding: 0; cursor: pointer;
+  border: 1px solid var(--xeplr-border-primary, #e2e5eb); background: var(--xeplr-bg-primary, #fff);
+  display: inline-flex; align-items: center; justify-content: center; color: var(--xeplr-text-muted, #6b7280);
+  transition: transform .1s, box-shadow .12s;
+}
+.xeplr-colorpicker-swatch:hover { transform: translateY(-1px); }
+.xeplr-colorpicker-swatch.selected { box-shadow: 0 0 0 2px var(--xeplr-bg-primary, #fff), 0 0 0 4px var(--xeplr-accent, #4f5fd6); }
+.xeplr-colorpicker-custom input[type="color"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; border: 0; padding: 0; }
+.xeplr-colorpicker-opacity { display: flex; flex-direction: column; gap: 6px; }
+.xeplr-colorpicker-opacity-row { display: flex; align-items: center; gap: 10px; }
+.xeplr-colorpicker-opacity-row input[type="range"] { flex: 1; accent-color: var(--xeplr-accent, #4f5fd6); }
+.xeplr-colorpicker-opacity-value {
+  display: inline-flex; align-items: center; gap: 2px; font-size: 12.5px; padding: 6px 10px;
+  border: 1px solid var(--xeplr-border-primary, #e2e5eb); border-radius: 8px; background: var(--xeplr-bg-primary, #fff);
+}
+.xeplr-colorpicker-opacity-value input { width: 32px; -moz-appearance: textfield; appearance: textfield; border: 0; background: transparent; text-align: right; font: inherit; color: inherit; padding: 0; }
+.xeplr-colorpicker-preview { width: 120px; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px; padding-left: 16px; border-left: 1px solid var(--xeplr-border-primary, #e2e5eb); }
+.xeplr-colorpicker-preview-box {
+  flex: 1; min-height: 44px; display: flex; align-items: center; padding: 0 12px; border-radius: 10px;
+  border: 1px solid var(--xeplr-border-primary, #e2e5eb); font-size: 14px; font-weight: 600; color: var(--xeplr-text-primary, #1f2937);
+}
+
+@container (max-width: 340px) {
+  .xeplr-colorpicker { flex-direction: column; gap: 12px; }
+  .xeplr-colorpicker-preview { width: auto; padding-left: 0; border-left: 0; padding-top: 12px; border-top: 1px solid var(--xeplr-border-primary, #e2e5eb); }
+}
+.xeplr-colorpicker-opacity-value input::-webkit-inner-spin-button,
+.xeplr-colorpicker-opacity-value input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }

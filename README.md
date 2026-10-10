@@ -100,8 +100,12 @@ export default function SelectCompany() {
 | `DataImportPage` | [see below](#dataimportpage) | Upload a file, map its parts to targets, commit |
 | `ImportHistoryPage` | [see below](#importhistorypage) | Past imports in a `XeplrTable`, with Rollback and Delete |
 | `GridDisplayerPage` | [see below](#griddisplayerpage) | Searchable, sortable grid of tiles you render |
+| `ColorPickerPage` | [see below](#colorpickerpage) | Swatches, no colour, a custom colour, opacity and a live preview, as one CSS colour |
+| `ExpandersPage` | [see below](#panel-panelsection-panelfield-expanderspage) | Titled parts of a panel, one open at a time |
+| `SettingsTreePage` | [see below](#panel-panelsection-panelfield-expanderspage) | Nested groups of settings: cards, branches on a rail, one open per level |
+| `PanelSection`, `PanelField` | [see below](#panel-panelsection-panelfield-expanderspage) | A section card with an icon; a row with the label left and help under the control |
 | `ProgressNotifier` | [see below](#progressnotifier) | Indeterminate bar and a line of text for one event key |
-| `FileUploadSample`, `DataImportSample`, `ImportHistorySample`, `NumberFieldSample`, `DateFieldSample`, `DateRangeSample`, `RangeFieldSample`, `DropdownSample`, `GridDisplayerSample`, `TextFieldSample` | the matching controller's return value | The default designs, usable on their own |
+| `FileUploadSample`, `DataImportSample`, `ImportHistorySample`, `NumberFieldSample`, `DateFieldSample`, `DateRangeSample`, `RangeFieldSample`, `DropdownSample`, `GridDisplayerSample`, `TextFieldSample`, `ColorPickerSample`, `ExpandersSample`, `SettingsTreeSample` | the matching controller's return value | The default designs, usable on their own |
 
 ### Controllers (hooks)
 
@@ -117,6 +121,9 @@ export default function SelectCompany() {
 | `useDataImportController(options)` | DataImportPage props | `file, inspecting, inspected, mappings, committing, results, error, handleFileChange, updateMapping(i, patch), handleCommit, reset, accept, targetLabel` |
 | `useImportHistoryController(options)` | ImportHistoryPage props | `jobs, loading, error, rollingBackId, deletingId, reload, handleRollback(job), handleDelete(job)` |
 | `useGridDisplayerController(props)` | GridDisplayerPage props | `query, setQuery, sortFields, sortValue, setSortValue, displayRows, tileFormatComponent, onSelect, onAddNew` |
+| `useColorPickerController(props)` | ColorPickerPage props | `label, value, hex, opacity, swatches [{color, selected}], custom, allowNone, allowOpacity, previewText, pick(hex), setOpacity(0–100), clear` |
+| `useExpandersController(props)` | ExpandersPage props | `items` (each with `open`), `toggle(key)` |
+| `useSettingsTreeController(props)` | SettingsTreePage props | `nodes` (each with `open`, `depth`, `parentKey`, `children`), `toggle(parentKey, key)` |
 | `useDesignValidator(name, rules)` | page name, rule list | a ref for the design's container |
 
 ### Model functions (no React)
@@ -135,6 +142,9 @@ export default function SelectCompany() {
 | `NUMBER_TYPES`, `sanitizeNumberInput`, `toNumeric`, `formatDisplay`, `validateRange`, `resolveAffixState` | `['float','currency','units']`, `(raw)`, `(raw) → number \| null`, `(value, decimals?)`, `(value, min, max) → { valid, error? }`, `(type, options)` | Number field helpers. `sanitizeNumberInput` keeps digits, the first `.`, and a leading `-`. |
 | `TEXT_TYPES`, `toValue`, `normalise`, `validate`, `remaining` | `['text','multiline','search']`, `(raw) → string`, `(raw, { trim, maxLength })`, `(raw, { required, requiredMessage, minLength, maxLength, pattern, patternMessage }) → string \| null`, `(raw, maxLength) → number \| null` | Text field helpers |
 | `DROPDOWN_MODES`, `normalizeKeys`, `sortByKey`, `filterByQuery`, `pickSelected` | `['single','multi']`, `(keys) → { id, name, extras }`, `(items, key)`, `(items, query, searchKeys)`, `(items, ids, idKey)` | Dropdown helpers |
+| `DEFAULT_SWATCHES`, `parseColor`, `formatColor`, `sameHue` | `[hex]`, `(css) → { hex, opacity } \| null`, `(hex, opacity) → css \| null`, `(a, b) → boolean` | Colour helpers. Opacity 100 writes `#RRGGBB`; anything less writes `#RRGGBBAA`. |
+| `toggleOpen`, `initialOpen` | `(open, key, multiple?) → keys`, `(items, initial?, multiple?) → keys` | Which expanders are open |
+| `toggleBranch`, `decorateTree` | `(open, parentKey, key) → open`, `(nodes, open) → nodes` | Which branch of a settings tree is open at each level; `open` is `{ [parentKey]: key }`, the root's parent `''` |
 | `filterGridRows`, `sortGridRows` | `(rows, query, fields)`, `(rows, field, 'asc'\|'desc')` | Grid search and sort. An array field matches if any entry matches. |
 | `sanitizeTargetName`, `buildInitialMappings` | `(name) → string`, `({ parts?, originalName? }) → [{ part, target, include }]` | Data import mapping |
 | `configureUpload`, `uploadFile` | `({ url, headers, getHeaders })`, `(files, { url, fieldName, extraData, onProgress }) → Promise` | Multipart upload over XHR |
@@ -155,7 +165,7 @@ export default function SelectCompany() {
 | `deepMerge` | `(base, override)` | Immutable merge. Arrays are replaced, and `undefined` never overwrites a value. |
 | `COUNTRIES` | `[{ code, name }]` | 196 countries |
 | `STATES`, `STATES_IN` | `{ IN: [{ code, name }] }`, `[{ code, name }]` | 36 Indian states and union territories |
-| `FILE_UPLOAD_RULES`, `DATA_IMPORT_RULES`, `IMPORT_HISTORY_RULES`, `NUMBER_FIELD_RULES`, `DATE_FIELD_RULES`, `DATE_RANGE_RULES`, `RANGE_FIELD_RULES`, `DROPDOWN_RULES`, `GRID_DISPLAYER_RULES`, `TEXT_FIELD_RULES` | rule arrays | What each page requires of a design |
+| `FILE_UPLOAD_RULES`, `DATA_IMPORT_RULES`, `IMPORT_HISTORY_RULES`, `NUMBER_FIELD_RULES`, `DATE_FIELD_RULES`, `DATE_RANGE_RULES`, `RANGE_FIELD_RULES`, `DROPDOWN_RULES`, `GRID_DISPLAYER_RULES`, `TEXT_FIELD_RULES`, `COLOR_PICKER_RULES`, `EXPANDERS_RULES`, `SETTINGS_TREE_RULES` | rule arrays | What each page requires of a design |
 
 ## DropdownPage
 
@@ -325,6 +335,52 @@ function Tile({ row, isAddTile }) {
 | `onSelect` | `(row) => void` | — | Tile click |
 | `onAddNew` | `() => void` | — | If given, a leading add tile is shown |
 
+## ColorPickerPage
+
+```jsx
+<ColorPickerPage label="Background" value={fill} onChange={setFill} />
+```
+
+| prop | default | meaning |
+|---|---|---|
+| `value` | — | `'#RRGGBB'`, `'#RRGGBBAA'`, or `null` for no colour |
+| `onChange` | — | `(value \| null) => void`, on every pick, slide or clear |
+| `swatches` | `DEFAULT_SWATCHES` | 14 soft and strong colours |
+| `allowNone` | `true` | Offer "no colour" |
+| `allowOpacity` | `true` | The opacity slider and % box |
+| `previewText` | `'Aa 123'` | Text in the preview box |
+| `label` | — | Line above the swatches |
+
+**The value is one CSS colour, never a colour plus an opacity.** `#RRGGBBAA` is understood by every browser and style sheet, so a saved style needs no second field and nothing else has to learn about opacity. A colour not among the swatches still shows as picked, in the custom swatch.
+
+## Panel: PanelSection, PanelField, ExpandersPage
+
+The parts of a settings panel. `PanelSection` and `PanelField` are presentation only and take children; the expanders have a controller.
+
+```jsx
+<PanelSection icon={<TypeIcon />} title="Field" subtitle="What this column is">
+  <PanelField label="Label" help="Shown as the column header">
+    <input value={label} onChange={…} />
+  </PanelField>
+</PanelSection>
+
+<ExpandersPage items={[
+  { key: 'text', title: 'Text', summary: 'Inter · 13px', icon: <T />, content: <TextRows /> },
+  { key: 'fill', title: 'Fill', content: <ColorPickerPage … /> }
+]} />
+```
+
+| component | props |
+|---|---|
+| `PanelSection` | `icon`, `title`, `subtitle`, `actions` (right of the title), `className`, children |
+| `PanelField` | `label`, `badge`, `help` (under the control), `htmlFor`, `stacked` (control under the label, for wide controls), children |
+| `SettingsTreePage` | `nodes: [{ key, title, icon?, count?, content?, children? }]`, `initial` (`{ [parentKey]: key }`, root parent `''`) |
+| `ExpandersPage` | `items: [{ key, title, summary?, icon?, content }]`, `initial` (key or keys open at first; default the first item; `null` for none), `multiple` (let several be open) |
+
+Opening an expander closes the others unless `multiple`: a long panel with every part open is the scroll the expanders exist to avoid.
+
+`SettingsTreePage` is for a panel with more settings than expanders can hold — a chart has over a hundred, four levels deep. Top-level nodes are cards (an icon tile, the title, `count` as a badge, a chevron); an open one is tinted with an accent bar and lists its children as rows on a dotted rail. A node shows its own `content` first, then its children. One branch is open per level, for the same reason as the expanders. Give every top-level node an icon or none of them: a panel where some groups have one reads as unfinished.
+
 ## ProgressNotifier
 
 Attach your app's event stream **once** at startup, then mount notifiers anywhere with a key. From `xeplr-bi`:
@@ -395,17 +451,21 @@ These create their own DOM nodes with inline styles, so they need no provider, m
 | `FILE_UPLOAD_RULES` | `input[type="file"]`; `.xeplr-upload-dropzone` or `[role="dropzone"]`; a `button` |
 | `DATA_IMPORT_RULES` | `input[type="file"]` |
 | `GRID_DISPLAYER_RULES` | `.xeplr-grid-search`; `.xeplr-grid` |
+| `COLOR_PICKER_RULES` | `.xeplr-colorpicker-swatch` or `[role="option"]` |
+| `EXPANDERS_RULES` | `.xeplr-expander-head` or `[aria-expanded]` |
+| `SETTINGS_TREE_RULES` | `.xeplr-tree-head` or `[aria-expanded]` |
 | `IMPORT_HISTORY_RULES` | nothing |
 
 ## Theming
 
-The designs use `xeplr-*` class prefixes (`xeplr-dropdown-*`, `xeplr-daterange-*`, `xeplr-rangefield-*`, `xeplr-datefield-*`, `xeplr-numberfield-*`, `xeplr-textfield-*`, `xeplr-upload-*`, `xeplr-data-import-*`, `xeplr-import-history-*`, `xeplr-grid-*`). The progress notifier uses `xpn`, `xpn--running` / `--complete` / `--error`, `xpn-bar` and `xpn-text`. What each design reads:
+The designs use `xeplr-*` class prefixes (`xeplr-dropdown-*`, `xeplr-daterange-*`, `xeplr-rangefield-*`, `xeplr-datefield-*`, `xeplr-numberfield-*`, `xeplr-textfield-*`, `xeplr-upload-*`, `xeplr-data-import-*`, `xeplr-import-history-*`, `xeplr-grid-*`, `xeplr-colorpicker-*`, `xeplr-panel-*`, `xeplr-expander-*`, `xeplr-tree-*`). The progress notifier uses `xpn`, `xpn--running` / `--complete` / `--error`, `xpn-bar` and `xpn-text`. What each design reads:
 
 | design | reads | without it |
 |---|---|---|
 | Dropdown, DataImport, ImportHistory, GridDisplayer | `@xeplr/ui-account` theme tokens: `--xeplr-bg-*`, `--xeplr-text-*`, `--xeplr-border-*`, `--xeplr-input-bg/-border/-text/-placeholder`, `--xeplr-accent`, `--xeplr-accent-text`, `--xeplr-danger*`, `--xeplr-success`, `--xeplr-tag-*`, `--xeplr-shadow-lg` | dark fallbacks |
 | Snackbar, confirm dialogs | `--xeplr-success`, `--xeplr-danger`, `--xeplr-accent`, `--xeplr-accent-text`, `--xeplr-bg-overlay`, `--xeplr-bg-secondary/-tertiary`, `--xeplr-text-primary/-secondary`, `--xeplr-border-primary`, `--xeplr-shadow-lg` | the snackbar's original colours; a dark dialog |
 | DateRange, RangeField, ProgressNotifier | `--xeplr-surface`, `--xeplr-surface-2`, `--xeplr-border`, `--xeplr-border-strong`, `--xeplr-border-secondary`, `--xeplr-muted`, `--xeplr-muted-2`, `--xeplr-text`, `--xeplr-hover`, `--xeplr-accent`, `--xeplr-danger`, `--xeplr-success` | light fallbacks. Of these, `ui-account`'s `theme.css` defines only accent, danger, success and border-secondary. |
+| ColorPicker, Panel | `--xeplr-bg-primary`, `--xeplr-bg-secondary`, `--xeplr-border-primary`, `--xeplr-border-focus`, `--xeplr-text-primary/-secondary/-muted`, `--xeplr-accent`, `--xeplr-accent-soft` | light fallbacks |
 | TextField | `--xeplr-input-text-*` (gap, padding, bg, colour, font size, placeholder, each border edge, border colour/hover/focus, radius, the full label font, help text, focus ring, invalid) | shipped defaults |
 | NumberField, DateField (and so RangeField's two inputs), FileUpload | fixed dark colours, no variables | — |
 
@@ -444,7 +504,7 @@ An edge set to `false` becomes `0` instead of being left out, because a missing 
 src/
   index.js                ─ everything below
   <control>/              ─ dropdown, dateRange, rangeField, dateField, numberField, textField,
-                            fileUpload, dataImport, gridDisplayer — each has:
+                            fileUpload, dataImport, gridDisplayer, colorPicker, panel — each has:
     <control>.js            model (pure; dataImport.js, uploadFile.js)
     use*Controller.js       controller
     validateDesign.js       *_RULES (fileUpload's also defines useDesignValidator)
@@ -455,7 +515,8 @@ src/
   confirm/confirm.js      ─ raiseConfirm, raiseChoice
   theme/                  ─ default.theme.json, index.js (resolveTheme, getThemeVariant, getChartOptions, inputStyleVars, deepMerge)
   data/                   ─ countries.json, states.json
-test/                     ─ dateRange, rangeField, textField (+ inputStyleVars), validateDesign (DATE_RANGE_RULES)
+test/                     ─ dateRange, rangeField, textField (+ inputStyleVars), colorPicker, panel,
+                            validateDesign (DATE_RANGE_RULES), designRules (COLOR_PICKER_RULES, EXPANDERS_RULES, SETTINGS_TREE_RULES)
 ```
 
 ## Tests
@@ -464,7 +525,7 @@ test/                     ─ dateRange, rangeField, textField (+ inputStyleVars
 npm test
 ```
 
-This runs each `test/*.test.js` with plain `node` and stops at the first failing file. The tests cover the date range model, the range field model, the text field model with `inputStyleVars`, and the date range design rules. CI runs the same files with `node --test` and coverage.
+This runs each `test/*.test.js` with plain `node` and stops at the first failing file. The tests cover the date range model, the range field model, the text field model with `inputStyleVars`, the colour, expander and settings-tree models, and the design rules of the date range, colour picker, expanders and settings tree. CI runs the same files with `node --test` and coverage.
 
 ## License
 
