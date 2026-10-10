@@ -56,17 +56,30 @@ export default function DateRangeSample(props) {
 
       {props.tab === 'range' && (
         <div className="xeplr-daterange-body">
+          {/* Edited as a draft and applied — the inputs hold a full date while
+              a year is half typed, so taking each change ran the report for
+              the year 2. Enter in either input applies too. */}
           <label className="xeplr-daterange-field">
             <span>From</span>
-            <input type="date" value={props.range.from || ''} onChange={function(e) { props.setRangeFrom(e.target.value); }} />
+            <input type="date" value={props.range.from || ''} onChange={function(e) { props.setRangeFrom(e.target.value); }}
+              onKeyDown={function(e) { if (e.key === 'Enter') { e.preventDefault(); props.applyRange(); } }} />
           </label>
           <label className="xeplr-daterange-field">
             <span>To</span>
-            <input type="date" value={props.range.to || ''} onChange={function(e) { props.setRangeTo(e.target.value); }} />
+            <input type="date" value={props.range.to || ''} onChange={function(e) { props.setRangeTo(e.target.value); }}
+              onKeyDown={function(e) { if (e.key === 'Enter') { e.preventDefault(); props.applyRange(); } }} />
           </label>
           {/* One-sided is legitimate — "everything since April" is a real
               answer — so it is stated rather than blocked. */}
-          <div className="xeplr-daterange-note">Leave either side empty for an open-ended range.</div>
+          <div className="xeplr-daterange-note">
+            {props.rangeProblem && (props.range.from || props.range.to)
+              ? props.rangeProblem
+              : 'Leave either side empty for an open-ended range.'}
+          </div>
+          <div className="xeplr-daterange-actions">
+            <button type="button" className="xeplr-daterange-apply" data-xeplr-daterange-apply="range"
+              disabled={Boolean(props.rangeProblem) || !props.rangeDirty} onClick={props.applyRange}>Apply</button>
+          </div>
         </div>
       )}
 
@@ -116,6 +129,12 @@ export default function DateRangeSample(props) {
             {props.single
               ? (props.singleParsed ? props.singleParsed.from + ' → ' + props.singleParsed.to : 'Not a date yet')
               : 'A day, a whole month, or a whole year.'}
+          </div>
+          <div className="xeplr-daterange-actions">
+            <button type="button" className="xeplr-daterange-apply" data-xeplr-daterange-apply="single"
+              disabled={!props.singleParsed}
+              // MOUSEDOWN: the input's onBlur would otherwise commit first.
+              onMouseDown={function(e) { e.preventDefault(); props.commitSingle(true); }}>Apply</button>
           </div>
         </div>
       )}

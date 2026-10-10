@@ -108,7 +108,7 @@ export default function SelectCompany() {
 | hook | takes | returns |
 |---|---|---|
 | `useDropdownController(props)` | DropdownPage props | `mode, source, keys {id,name,extras}, searchable, canCreate, createLabel, creating, createError, createItem(name?), placeholder, disabled, items, filteredItems, selectedItems, selection, loading, error, query, isOpen, rootRef, isSelected(id), open, close, toggle, selectItem(id), removeSelection(id), clearSelection, handleSearch(e), refresh` |
-| `useDateRangeController(props)` | DateRangePage props | `tab, setTab, presets, value, label, range, single, setSingle, singleParsed, suggestions, applySuggestion(text), selectPreset(key), setRangeFrom, setRangeTo, commitSingle(close), clear, allowClear, inheritedLabel` |
+| `useDateRangeController(props)` | DateRangePage props | `tab, setTab, presets, value, label, range, single, setSingle, singleParsed, suggestions, applySuggestion(text), selectPreset(key), setRangeFrom, setRangeTo (edit the draft), applyRange(), rangeProblem, rangeDirty, commitSingle(close), clear, allowClear, inheritedLabel` |
 | `useRangeFieldController(props)` | RangeFieldPage props | `fromLabel, toLabel, from, to`. `from` and `to` are each a `useDateFieldController` result. |
 | `useDateFieldController(props)` | DateFieldPage props | `type, inputType, raw, age, error, placeholder, disabled, min, max, handleChange` |
 | `useNumberFieldController(props)` | NumberFieldPage props | `type, raw, numeric, error, placeholder, disabled, decimals, formatDisplay, affix {list, selected, position, labelKey, valueKey} \| null, handleNumberChange, handleAffixChange, handleBlur` |
@@ -129,6 +129,7 @@ export default function SelectCompany() {
 | `resolveDateValue` | `(selection, now?, options?) → { from, to } \| null` | Resolves a `quick` / `range` / `single` selection. `null` means no constraint. |
 | `dateValueLabel` | `(selection) → string \| null` | "Last month", "2022-01-01 → 2022-03-31", "From …", "Until …" |
 | `dateValueIsSet` | `(selection, now?) → boolean` | True only if the selection resolves to a range |
+| `rangeProblem` | `({ from, to }) → string \| null` | Why a typed range cannot be applied yet ("Choose a From or a To date", "From is after To"), or `null` |
 | `RANGE_TYPES`, `emptyRange`, `normalizeRange`, `rangeIsSet` | `['date','datetime']`, `() → {from:'',to:''}`, `(r) → {from,to}`, `(r) → boolean` | From/to helpers. A range with one side set counts as set. |
 | `DATE_TYPES`, `isValidISODate`, `calculateAge`, `inputTypeFor`, `toInputValue`, `validateBounds` | `['date','datetime','age']`, `(s)`, `(dob, now?)`, `(type)`, `(value, type)`, `(value, min, max) → { valid, error? }` | Date field helpers |
 | `NUMBER_TYPES`, `sanitizeNumberInput`, `toNumeric`, `formatDisplay`, `validateRange`, `resolveAffixState` | `['float','currency','units']`, `(raw)`, `(raw) → number \| null`, `(value, decimals?)`, `(value, min, max) → { valid, error? }`, `(type, options)` | Number field helpers. `sanitizeNumberInput` keeps digits, the first `.`, and a leading `-`. |
@@ -189,12 +190,12 @@ export default function SelectCompany() {
 |---|---|---|---|
 | `value` | `{ kind: 'quick', preset } \| { kind: 'range', from, to } \| { kind: 'single', value } \| null` | `null` | The selection |
 | `onChange` | `(selection \| null) => void` | no-op | |
-| `onClose` | `() => void` | — | Called after a choice that ends the interaction: a preset, a suggestion, Enter in Single, or Clear |
+| `onClose` | `() => void` | — | Called after a choice that ends the interaction: a preset, a suggestion, Apply (or Enter) in Range or Single, or Clear |
 | `presets` | `[{ key, label }]` | `QUICK_PRESETS` | The Quick list. Only keys that `resolveQuickPreset` knows will resolve. |
 | `allowClear` | `boolean` | `true` | `false` removes the Clear button, and `clear()` refuses too |
 | `inheritedLabel` | `string` | — | Shows "Using …" when `value` is empty |
 
-**Every selection resolves to `{ from, to }`, including a single date.** "May 2022" becomes 1–31 May and "2022" becomes the whole year, so a consumer never has to ask which comparison was meant. The Range tab changes `onChange` on every edit, and one open side is allowed. The Single tab commits only once the text parses ("Not a date yet" otherwise), on blur or Enter. While you type, it suggests months and years, putting the committed year first. The financial-year presets use `fiscalStartMonth` (default April). The page itself does not pass that option, so change it by calling `resolveDateValue(value, now, { fiscalStartMonth })` where you consume the value.
+**Every selection resolves to `{ from, to }`, including a single date.** "May 2022" becomes 1–31 May and "2022" becomes the whole year, so a consumer never has to ask which comparison was meant. **The Range tab is applied, not taken as you type.** A browser date input holds a complete date while a year is half typed (`2` is `0002-01-01`), so committing each edit ran the host's query for the year 2. The inputs edit a draft, and `onChange` fires once, on **Apply** or Enter. Apply is disabled until the draft is valid (`rangeProblem`: something chosen, From not after To) and differs from what is applied. One open side is allowed. The Single tab commits only once the text parses ("Not a date yet" otherwise), on blur, Enter or Apply. While you type, it suggests months and years, putting the committed year first. The financial-year presets use `fiscalStartMonth` (default April). The page itself does not pass that option, so change it by calling `resolveDateValue(value, now, { fiscalStartMonth })` where you consume the value.
 
 ## RangeFieldPage
 

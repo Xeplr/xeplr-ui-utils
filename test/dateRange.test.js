@@ -3,7 +3,7 @@
 // Everything resolves to {from, to}, including a single date — "May 2022" is
 // the range 1–31 May. That's what lets the date filter have no operator to
 // choose, and it's the property most of these check.
-import { resolveDateValue, resolveQuickPreset, parseSingleDate, dateValueLabel, dateValueIsSet, QUICK_PRESETS } from '../src/dateRange/dateRange.js';
+import { resolveDateValue, resolveQuickPreset, parseSingleDate, dateValueLabel, dateValueIsSet, QUICK_PRESETS, rangeProblem } from '../src/dateRange/dateRange.js';
 
 const results = []
 const check = (name, cond) => { results.push([name, cond]); console.log((cond ? '  ok   ' : '  FAIL ') + name) }
@@ -123,6 +123,14 @@ check('...false for nothing', !dateValueIsSet(null))
 check('...and false for text that does not parse', !dateValueIsSet({ kind: 'single', value: 'garbage' }))
 check('...true once the text does parse', dateValueIsSet({ kind: 'single', value: 'May 2022' }))
 
+// A typed range is APPLIED, never taken as you type: a date input holds
+// 0002-01-01 while "2026" is half typed. Apply asks rangeProblem first.
+check('a range with a From can be applied', rangeProblem({ from: '2026-01-01', to: '' }) === null)
+check('...with a To alone too (open-ended)', rangeProblem({ from: '', to: '2026-03-31' }) === null)
+check('...and with both in order', rangeProblem({ from: '2026-01-01', to: '2026-03-31' }) === null)
+check('nothing chosen cannot be applied', rangeProblem({ from: '', to: '' }) === 'Choose a From or a To date')
+check('From after To cannot be applied', rangeProblem({ from: '2026-04-01', to: '2026-03-31' }) === 'From is after To')
+check('a missing draft counts as nothing chosen', rangeProblem(null) === 'Choose a From or a To date')
 
 const failed = results.filter(([, ok]) => !ok)
 console.log(`\n${results.length - failed.length}/${results.length} passed`)
