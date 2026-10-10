@@ -16,8 +16,26 @@ export function sanitizeTargetName(name) {
     .replace(/^_+|_+$/g, '') || 'table';
 }
 
-// inspectResult: { filePath, format, originalName?, parts?: string[] }
-// -> [{ part: string|null, target: string, include: boolean }]
+// What the inspect step found wrong with one part, if anything:
+//   inspectResult.checks = { [part]: [{ key, message, fixLabel?, fixDefault? }] }
+// (the key '' for a file that is one unit). A check with a fixLabel offers a
+// fix the person switches on or off before importing; its choice travels
+// with the mapping as fixes[key].
+export function checksFor(inspectResult, part) {
+  var all = (inspectResult && inspectResult.checks) || {};
+  return all[part == null ? '' : part] || [];
+}
+
+function initialFixes(inspectResult, part) {
+  var fixes = {};
+  checksFor(inspectResult, part).forEach(function(c) {
+    if (c.fixLabel) fixes[c.key] = c.fixDefault !== false;
+  });
+  return fixes;
+}
+
+// inspectResult: { filePath, format, originalName?, parts?: string[], checks? }
+// -> [{ part: string|null, target: string, include: boolean, fixes: { [key]: boolean } }]
 //
 // parts present (e.g. Excel sheets) -> one row per part, all included by
 // default. parts absent (e.g. CSV/JSON — the whole file is one unit) -> a
@@ -25,8 +43,8 @@ export function sanitizeTargetName(name) {
 export function buildInitialMappings(inspectResult) {
   if (inspectResult.parts && inspectResult.parts.length) {
     return inspectResult.parts.map(function(part) {
-      return { part: part, target: sanitizeTargetName(part), include: true };
+      return { part: part, target: sanitizeTargetName(part), include: true, fixes: initialFixes(inspectResult, part) };
     });
   }
-  return [{ part: null, target: sanitizeTargetName(inspectResult.originalName || 'data'), include: true }];
+  return [{ part: null, target: sanitizeTargetName(inspectResult.originalName || 'data'), include: true, fixes: initialFixes(inspectResult, null) }];
 }

@@ -2,7 +2,7 @@ import './dataImport.css';
 
 export default function DataImportSample({
   file, inspecting, inspected, mappings, committing, results, error,
-  handleFileChange, updateMapping, handleCommit, reset, accept, targetLabel
+  handleFileChange, updateMapping, setFix, checksOf, handleCommit, reset, accept, targetLabel
 }) {
   return (
     <div className="xeplr-data-import">
@@ -37,6 +37,31 @@ export default function DataImportSample({
                   onChange={function(e) { updateMapping(i, { target: e.target.value }); }}
                   placeholder={targetLabel}
                 />
+                {/* What the inspect step found, before anything is loaded —
+                    and the fix, when one is offered, as a choice. */}
+                {(checksOf ? checksOf(m.part) : []).map(function(c) {
+                  return (
+                    <div key={c.key} className="xeplr-data-import-check" role="alert">
+                      <p className="xeplr-data-import-check-message">{c.message}</p>
+                      {c.fixLabel && (
+                        <label className="xeplr-data-import-check-fix">
+                          <input
+                            type="checkbox"
+                            checked={Boolean(m.fixes && m.fixes[c.key])}
+                            disabled={!m.include}
+                            onChange={function(e) { setFix(i, c.key, e.target.checked); }}
+                          />
+                          {c.fixLabel}
+                        </label>
+                      )}
+                      {(c.examples || []).length > 0 && (
+                        <ul className="xeplr-data-import-check-examples">
+                          {c.examples.map(function(x, xi) { return <li key={xi}>{x}</li>; })}
+                        </ul>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             );
           })}
@@ -61,6 +86,7 @@ export default function DataImportSample({
                 <span className={r.success ? 'xeplr-data-import-result-ok' : 'xeplr-data-import-result-fail'}>
                   {r.success ? (r.rows != null ? r.rows + ' rows' : 'Done') : (r.error || 'Failed')}
                 </span>
+                {r.note && <span className="xeplr-data-import-result-note">{r.note}</span>}
               </div>
             );
           })}
