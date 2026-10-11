@@ -66,3 +66,10 @@ export var DATA_IMPORT_RULES = [
 ];
 
 export var IMPORT_HISTORY_RULES = [];
+
+// Checked when the dialog opens — it is not on the page before.
+export var DROPPED_ROWS_RULES = [
+  { id: 'xeplr-dropped-rows-copy', label: 'Copy button' },
+  { id: 'xeplr-dropped-rows-download', label: 'Download button' },
+  { id: 'xeplr-dropped-rows-close', label: 'Close button' }
+];

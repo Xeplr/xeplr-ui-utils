@@ -74,7 +74,7 @@ export default function SelectCompany() {
    }
    ```
 
-3. **Model only.** The model files import neither React nor the DOM: `dateRange.js`, `rangeField.js`, `textField.js`, `numberField.js`, `dateField.js`, `dropdown.js`, `gridDisplayer.js`, `dataImport.js`, and `theme/index.js`. They are exported from the root (for a bundler). In plain Node, import the file directly, because the root index pulls in JSX, CSS and JSON. The tests do this:
+3. **Model only.** The model files import neither React nor the DOM: `dateRange.js`, `rangeField.js`, `textField.js`, `numberField.js`, `dateField.js`, `dropdown.js`, `gridDisplayer.js`, `dataImport.js`, `droppedRows.js`, and `theme/index.js`. They are exported from the root (for a bundler). In plain Node, import the file directly, because the root index pulls in JSX, CSS and JSON. The tests do this:
 
    ```js
    import { resolveDateValue } from '@xeplr/ui-utils/src/dateRange/dateRange.js'
@@ -99,13 +99,14 @@ export default function SelectCompany() {
 | `FileUploadPage` | [see below](#fileuploadpage) | Drag-and-drop upload with type and size checks and a progress bar |
 | `DataImportPage` | [see below](#dataimportpage) | Upload a file, map its parts to targets, commit |
 | `ImportHistoryPage` | [see below](#importhistorypage) | Past imports in a `XeplrTable`, with Rollback and Delete |
+| `DroppedRowsPage` | [see below](#dropped-rows) | The rows an import's database refused, in a dialog: row, reason, Copy, Download. Built into the two pages above |
 | `GridDisplayerPage` | [see below](#griddisplayerpage) | Searchable, sortable grid of tiles you render |
 | `ColorPickerPage` | [see below](#colorpickerpage) | Swatches, no colour, a custom colour, opacity and a live preview, as one CSS colour |
 | `ExpandersPage` | [see below](#panel-panelsection-panelfield-expanderspage) | Titled parts of a panel, one open at a time |
 | `SettingsTreePage` | [see below](#panel-panelsection-panelfield-expanderspage) | Nested groups of settings: cards, branches on a rail, one open per level |
 | `PanelSection`, `PanelField` | [see below](#panel-panelsection-panelfield-expanderspage) | A section card with an icon; a row with the label left and help under the control |
 | `ProgressNotifier` | [see below](#progressnotifier) | Indeterminate bar and a line of text for one event key |
-| `FileUploadSample`, `DataImportSample`, `ImportHistorySample`, `NumberFieldSample`, `DateFieldSample`, `DateRangeSample`, `RangeFieldSample`, `DropdownSample`, `GridDisplayerSample`, `TextFieldSample`, `ColorPickerSample`, `ExpandersSample`, `SettingsTreeSample` | the matching controller's return value | The default designs, usable on their own |
+| `FileUploadSample`, `DataImportSample`, `ImportHistorySample`, `DroppedRowsSample`, `NumberFieldSample`, `DateFieldSample`, `DateRangeSample`, `RangeFieldSample`, `DropdownSample`, `GridDisplayerSample`, `TextFieldSample`, `ColorPickerSample`, `ExpandersSample`, `SettingsTreeSample` | the matching controller's return value | The default designs, usable on their own |
 
 ### Controllers (hooks)
 
@@ -120,6 +121,7 @@ export default function SelectCompany() {
 | `useFileUploadController(options)` | FileUploadPage props | `files, uploading, progress, error, result, dragOver, inputRef, handleChange, handleDragOver, handleDragLeave, handleDrop, handleUpload, openFilePicker, removeFile(i), clear, allowedTypes, maxSize, maxFiles` |
 | `useDataImportController(options)` | DataImportPage props | `file, inspecting, inspected, mappings, committing, results, error, handleFileChange, updateMapping(i, patch), setFix(i, key, on), checksOf(part), handleCommit, reset, accept, targetLabel` |
 | `useImportHistoryController(options)` | ImportHistoryPage props | `jobs, loading, error, rollingBackId, deletingId, reload, handleRollback(job), handleDelete(job)` |
+| `useDroppedRowsController(options)` | `onLoadDropped`, `onDownloadDropped` | `job, data, table {columns, rows}, summary {heading, note}, loading, error, copied, downloading, canCopy, canDownload, canView(job), open(job), close, copy, download` |
 | `useGridDisplayerController(props)` | GridDisplayerPage props | `query, setQuery, sortFields, sortValue, setSortValue, displayRows, tileFormatComponent, onSelect, onAddNew` |
 | `useColorPickerController(props)` | ColorPickerPage props | `label, value, hex, opacity, swatches [{color, selected}], custom, allowNone, allowOpacity, previewText, pick(hex), setOpacity(0–100), clear` |
 | `useExpandersController(props)` | ExpandersPage props | `items` (each with `open`), `toggle(key)` |
@@ -165,7 +167,7 @@ export default function SelectCompany() {
 | `deepMerge` | `(base, override)` | Immutable merge. Arrays are replaced, and `undefined` never overwrites a value. |
 | `COUNTRIES` | `[{ code, name }]` | 196 countries |
 | `STATES`, `STATES_IN` | `{ IN: [{ code, name }] }`, `[{ code, name }]` | 36 Indian states and union territories |
-| `FILE_UPLOAD_RULES`, `DATA_IMPORT_RULES`, `IMPORT_HISTORY_RULES`, `NUMBER_FIELD_RULES`, `DATE_FIELD_RULES`, `DATE_RANGE_RULES`, `RANGE_FIELD_RULES`, `DROPDOWN_RULES`, `GRID_DISPLAYER_RULES`, `TEXT_FIELD_RULES`, `COLOR_PICKER_RULES`, `EXPANDERS_RULES`, `SETTINGS_TREE_RULES` | rule arrays | What each page requires of a design |
+| `FILE_UPLOAD_RULES`, `DATA_IMPORT_RULES`, `IMPORT_HISTORY_RULES`, `DROPPED_ROWS_RULES`, `NUMBER_FIELD_RULES`, `DATE_FIELD_RULES`, `DATE_RANGE_RULES`, `RANGE_FIELD_RULES`, `DROPDOWN_RULES`, `GRID_DISPLAYER_RULES`, `TEXT_FIELD_RULES`, `COLOR_PICKER_RULES`, `EXPANDERS_RULES`, `SETTINGS_TREE_RULES` | rule arrays | What each page requires of a design |
 
 ## DropdownPage
 
@@ -298,6 +300,7 @@ configureUpload({ url: '/uploads', getHeaders: () => ({ Authorization: 'Bearer '
 | `onCommit` | `(filePath, [{ part, target, fixes }], { originalName }) => Promise<{ results } \| results[]>` | **Required.** Load the included parts into their targets. `fixes` is the person's choice for each fix the checks offered. |
 | `accept` | `string` | The file input's `accept` attribute, for example `'.csv,.json,.xlsx,.xls'` |
 | `targetLabel` | `string` | Placeholder for the target name (default `'Target'`) |
+| `onLoadDropped`, `onDownloadDropped` | see [Dropped rows](#dropped-rows) | A result with `dropped > 0` and a `jobId` then says "N dropped — View" |
 
 The file is sent through this package's own `uploadFile()` to the URL set by `configureUpload`, not through a prop. That keeps the component free of app-specific upload wiring. The apps point it at `@xeplr/base-apis`' generic upload route. The upload response must include `filePath`. With `parts`, each part becomes a row (included by default) whose target is `sanitizeTargetName(part)`. Without `parts`, there is one row named after the file. Result rows show `target (part)` and then `rows` + " rows", "Done", or `error`, depending on `success`.
 
@@ -312,8 +315,22 @@ The file is sent through this package's own `uploadFile()` to the URL set by `co
 | `onList` | `() => Promise<{ jobs } \| jobs[]>` | **Required, and must be a stable function**: module-level, or wrapped in `useCallback`. The list reloads whenever its identity changes. |
 | `onRollback` | `(job) => Promise` | Rollback of a `completed` job. The list reloads afterwards. |
 | `onDelete` | `(job) => Promise` | Removes a history record. The Delete button is on every row, so without this prop it fails with an error. |
+| `onLoadDropped`, `onDownloadDropped` | see [Dropped rows](#dropped-rows) | A job with `rowsDropped > 0` gets a **View dropped** action |
 
 Job shape: `{ id, originalFileName, part, target, rows, status: 'completed' | 'failed' | 'rolled-back', startedAt, error, destination?, rowsLoaded?, rowsDropped?, createdByName? }`. Missing optional fields show "—". Both actions ask first with `raiseConfirm` (danger style). The Delete prompt warns that deleting a completed job's record does **not** undo its data and makes it impossible to roll back. The table shows 20 rows per page.
+
+## Dropped rows
+
+Rows an import's database refused (a constraint, a value its column will not take) are not in the table. Without a way to see them, "63 dropped" is a number nobody can act on. `DataImportPage` and `ImportHistoryPage` show them when the app passes:
+
+| prop | type | meaning |
+|---|---|---|
+| `onLoadDropped` | `(job) => Promise<{ columns, rows: [{ rowNum, reason, values }], total, dropped }>` | The dropped rows of one import. `columns` are the file's, in order; `values` is keyed by them; `total` is how many were kept, `dropped` how many the import counted. Without this prop nothing offers to show them. |
+| `onDownloadDropped` | `(job) => Promise` | Saves them as a file. Make it one that imports again as it is: the file's columns only, header in row 1 (BI: an .xlsx). |
+
+`job` is a history row (`rowsDropped`), or an import result (`{ id: result.jobId, dropped }`). The dialog shows the heading ("2 rows dropped from stock.csv → stock"), a table of row number, **Why it was dropped** and the file's columns, and **Copy**, **Download Excel**, **Close** (Escape and a click outside close it too). **Copy** puts the file's columns and the rows on the clipboard as tab-separated text, quoted as Excel quotes it, so it pastes into Excel as cells; like the download, it leaves out the row number and reason, so pasted, fixed and saved, it imports again. A note says when not every row is there: an import from before rows were kept (only a count), fewer kept than dropped, or only the first ones shown.
+
+The model (`droppedRows.js`) is pure: `droppedCount(job)`, `droppedTable(data)` (keys `c0`, `c1`, … because a column name may hold a dot), `droppedAsTsv(data)`, `tsvCell(value)`, `droppedSummary(job, data)`.
 
 ## GridDisplayerPage
 
@@ -457,6 +474,7 @@ These create their own DOM nodes with inline styles, so they need no provider, m
 | `EXPANDERS_RULES` | `.xeplr-expander-head` or `[aria-expanded]` |
 | `SETTINGS_TREE_RULES` | `.xeplr-tree-head` or `[aria-expanded]` |
 | `IMPORT_HISTORY_RULES` | nothing |
+| `DROPPED_ROWS_RULES` | `#xeplr-dropped-rows-copy`, `#xeplr-dropped-rows-download`, `#xeplr-dropped-rows-close` — checked when the dialog opens, since it is not on the page before |
 
 ## Theming
 

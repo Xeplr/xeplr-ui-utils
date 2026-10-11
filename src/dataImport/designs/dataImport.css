@@ -115,3 +115,50 @@
 .xeplr-data-import-check-examples { margin: 6px 0 0; padding-left: 18px; font-size: 12px; color: var(--xeplr-text-muted, #888); }
 .xeplr-data-import-result-note { flex-basis: 100%; font-size: 12px; color: var(--xeplr-text-muted, #888); }
 .xeplr-data-import-result-row { flex-wrap: wrap; }
+
+/* ── Dropped rows: the rows an import's database refused, in a dialog ── */
+.xeplr-data-import-button {
+  padding: 7px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--xeplr-border-primary, #444);
+  background: var(--xeplr-bg-secondary, #232323);
+  color: var(--xeplr-text-primary, #e0e0e0);
+  font-size: 13px;
+  cursor: pointer;
+}
+.xeplr-data-import-button-primary { border-color: transparent; background: var(--xeplr-accent, #646cff); color: var(--xeplr-accent-text, #fff); }
+.xeplr-data-import-button:disabled { opacity: 0.6; cursor: default; }
+.xeplr-data-import-link {
+  padding: 0; border: none; background: none; cursor: pointer;
+  color: var(--xeplr-accent, #646cff); font-size: inherit; text-decoration: underline;
+}
+
+.xeplr-data-import-dropped-backdrop {
+  position: fixed; inset: 0; z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.55);
+}
+.xeplr-data-import-dropped {
+  display: flex; flex-direction: column; gap: 12px;
+  width: min(1100px, 100%); max-height: calc(100vh - 48px);
+  padding: 20px;
+  border: 1px solid var(--xeplr-border-primary, #444);
+  border-radius: 10px;
+  background: var(--xeplr-bg-primary, #1a1a1a);
+  color: var(--xeplr-text-primary, #e0e0e0);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+.xeplr-data-import-dropped-head { display: flex; flex-direction: column; gap: 4px; }
+.xeplr-data-import-dropped-title { margin: 0; font-size: 16px; font-weight: 600; }
+.xeplr-data-import-dropped-note {
+  padding: 8px 12px; border-radius: 6px; font-size: 13px;
+  background: var(--xeplr-bg-secondary, #222);
+  border: 1px solid var(--xeplr-border-secondary, #2a2a2a);
+  color: var(--xeplr-text-secondary, #999);
+}
+.xeplr-data-import-dropped-table { flex: 1 1 auto; min-height: 0; overflow: auto; }
+.xeplr-data-import-dropped-reason { color: var(--xeplr-danger, #ff6b6b); white-space: normal; }
+.xeplr-data-import-dropped-actions { display: flex; align-items: center; gap: 8px; }
+.xeplr-data-import-dropped-spacer { flex: 1; }
+.xeplr-data-import-result-dropped { color: var(--xeplr-text-secondary, #999); font-size: 13px; }

@@ -40,6 +40,16 @@ export { IMPORT_HISTORY_RULES } from './dataImport/validateDesign.js';
 export { ImportHistorySample } from './dataImport/designs/index.js';
 export { ImportHistoryPage } from './dataImport/pages.jsx';
 
+// DroppedRows — the rows an import's database refused, with each one's place
+// in the file and the reason; Copy (tab-separated, pastes into Excel) and
+// Download (app-supplied onDownloadDropped). Built into DataImportPage and
+// ImportHistoryPage when the app passes onLoadDropped.
+export { droppedCount, droppedTable, droppedAsTsv, droppedSummary, tsvCell } from './dataImport/droppedRows.js';
+export { useDroppedRowsController } from './dataImport/useDroppedRowsController.js';
+export { DROPPED_ROWS_RULES } from './dataImport/validateDesign.js';
+export { DroppedRowsSample } from './dataImport/designs/index.js';
+export { DroppedRowsPage } from './dataImport/pages.jsx';
+
 // NumberField — model
 export {
   NUMBER_TYPES,
