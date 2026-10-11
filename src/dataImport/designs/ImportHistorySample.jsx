@@ -78,7 +78,7 @@ var SCHEMA = {
   }
 };
 
-export default function ImportHistorySample({ jobs, loading, error, rollingBackId, deletingId, handleRollback, handleDelete }) {
+export default function ImportHistorySample({ jobs, loading, error, rollingBackId, deletingId, handleRollback, handleDelete, canViewDropped, viewDropped }) {
   async function onRollbackClick(job) {
     var ok = await raiseConfirm(
       'This deletes every row loaded into "' + job.target + '" by this import. This cannot be undone.',
@@ -96,6 +96,13 @@ export default function ImportHistorySample({ jobs, loading, error, rollingBackI
   }
 
   var rowActions = [
+    {
+      // The rows the database refused: see them, copy or download them.
+      key: 'dropped',
+      label: 'View dropped',
+      visible: function(job) { return !!canViewDropped && canViewDropped(job); },
+      onClick: function(job) { viewDropped(job); }
+    },
     {
       key: 'rollback',
       label: 'Rollback',

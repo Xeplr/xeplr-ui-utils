@@ -2,7 +2,8 @@ import './dataImport.css';
 
 export default function DataImportSample({
   file, inspecting, inspected, mappings, committing, results, error,
-  handleFileChange, updateMapping, setFix, checksOf, handleCommit, reset, accept, targetLabel
+  handleFileChange, updateMapping, setFix, checksOf, handleCommit, reset, accept, targetLabel,
+  canViewDropped, viewDropped
 }) {
   return (
     <div className="xeplr-data-import">
@@ -87,6 +88,19 @@ export default function DataImportSample({
                   {r.success ? (r.rows != null ? r.rows + ' rows' : 'Done') : (r.error || 'Failed')}
                 </span>
                 {r.note && <span className="xeplr-data-import-result-note">{r.note}</span>}
+                {r.success && r.dropped > 0 && (
+                  <span className="xeplr-data-import-result-dropped">
+                    {r.dropped.toLocaleString()} dropped
+                    {canViewDropped && canViewDropped({ id: r.jobId, dropped: r.dropped }) && (
+                      <>
+                        {' — '}
+                        <button type="button" className="xeplr-data-import-link" onClick={function() {
+                          viewDropped({ id: r.jobId, dropped: r.dropped, originalFileName: file && file.name, part: r.part, target: r.target });
+                        }}>View</button>
+                      </>
+                    )}
+                  </span>
+                )}
               </div>
             );
           })}
