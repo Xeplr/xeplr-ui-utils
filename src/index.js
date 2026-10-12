@@ -17,7 +17,7 @@ export { FileUploadPage } from './fileUpload/pages.jsx';
 // the whole file, for CSV/JSON) to app-defined named targets, commit. The
 // app supplies onInspect/onCommit (its own upload + load endpoints); this
 // module only owns the file-pick -> mapping -> commit flow and UI.
-export { sanitizeTargetName, buildInitialMappings } from './dataImport/dataImport.js';
+export { sanitizeTargetName, buildInitialMappings, IMPORT_MODES, DEFAULT_MODE, targetProblems, blocksImport, canRollback, modeLabel } from './dataImport/dataImport.js';
 
 // DataImport — controller
 export { useDataImportController } from './dataImport/useDataImportController.js';
@@ -49,6 +49,16 @@ export { useDroppedRowsController } from './dataImport/useDroppedRowsController.
 export { DROPPED_ROWS_RULES } from './dataImport/validateDesign.js';
 export { DroppedRowsSample } from './dataImport/designs/index.js';
 export { DroppedRowsPage } from './dataImport/pages.jsx';
+
+// Imports — the whole import screen against @xeplr/imports' routes: database
+// picker, import (DataImportPage), progress with ✕, history (ImportHistoryPage).
+// <ImportsPage basePath="/api/imports" /> is all an app adds.
+export { createImportsApi, importProgressText, runResults, historyJob, databasesOf, fileNameOf } from './imports/importsApi.js';
+export { useImportsController } from './imports/useImportsController.js';
+export { IMPORTS_RULES } from './imports/validateDesign.js';
+export { ImportsSample } from './imports/designs/index.js';
+export { ImportsPage } from './imports/pages.jsx';
+export { uploadHeaders } from './fileUpload/uploadFile.js';
 
 // NumberField — model
 export {

@@ -1,18 +1,25 @@
 import './dataImport.css';
 
 export default function DataImportSample({
-  file, inspecting, inspected, mappings, committing, results, error,
+  file, inspecting, uploadPercent, inspected, mappings, committing, results, error,
   handleFileChange, updateMapping, setFix, checksOf, handleCommit, reset, accept, targetLabel,
-  canViewDropped, viewDropped
+  canViewDropped, viewDropped, modes, setMode, problems, checking, blocked
 }) {
   return (
     <div className="xeplr-data-import">
       <label className="xeplr-data-import-dropzone">
-        <input type="file" accept={accept} onChange={handleFileChange} />
+        {/* Cleared on each pick, so choosing the same file again — fixed and
+            saved under its old name — is a new pick, not nothing. */}
+        <input type="file" accept={accept} onChange={handleFileChange}
+          onClick={function(e) { e.currentTarget.value = ''; }} />
         {file ? file.name : 'Choose a file to import'}
       </label>
 
-      {inspecting && <p className="xeplr-data-import-hint">Inspecting file…</p>}
+      {inspecting && (
+        <p className="xeplr-data-import-hint">
+          {uploadPercent != null && uploadPercent < 100 ? 'Uploading the file… ' + uploadPercent + '%' : 'Inspecting file…'}
+        </p>
+      )}
       {error && <div className="xeplr-data-import-alert xeplr-data-import-alert-error">{error}</div>}
 
       {inspected && mappings.length > 0 && (
@@ -38,6 +45,30 @@ export default function DataImportSample({
                   onChange={function(e) { updateMapping(i, { target: e.target.value }); }}
                   placeholder={targetLabel}
                 />
+                {/* What the import does to the table: make it, add to it, or
+                    replace its rows. */}
+                {modes && (
+                  <div className="xeplr-data-import-mode" role="radiogroup" aria-label="What to do with the table">
+                    {modes.map(function(mode) {
+                      var on = m.mode === mode.key;
+                      return (
+                        <button key={mode.key} type="button" role="radio" aria-checked={on} disabled={!m.include}
+                          className={'xeplr-data-import-mode-option' + (on ? ' xeplr-data-import-mode-option-on' : '')}
+                          onClick={function() { setMode(i, mode.key); }}>
+                          {mode.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+                {/* What will happen to that table, said before anything loads. */}
+                {problems && (problems[i] || []).length > 0 && (
+                  <ul className="xeplr-data-import-target">
+                    {problems[i].map(function(p, pi) {
+                      return <li key={pi} className={'xeplr-data-import-target-' + p.level}>{p.message}</li>;
+                    })}
+                  </ul>
+                )}
                 {/* What the inspect step found, before anything is loaded —
                     and the fix, when one is offered, as a choice. */}
                 {(checksOf ? checksOf(m.part) : []).map(function(c) {
@@ -71,8 +102,9 @@ export default function DataImportSample({
 
       {inspected && mappings.length > 0 && (
         <div className="xeplr-data-import-actions">
-          <button type="button" onClick={handleCommit} disabled={committing || !mappings.some(function(m) { return m.include; })}>
-            {committing ? 'Importing…' : 'Import'}
+          <button type="button" onClick={handleCommit}
+            disabled={committing || checking || blocked || !mappings.some(function(m) { return m.include; })}>
+            {committing ? 'Importing…' : checking ? 'Checking the table…' : 'Import'}
           </button>
           <button type="button" onClick={reset} disabled={committing}>Cancel</button>
         </div>

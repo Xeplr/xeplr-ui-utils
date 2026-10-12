@@ -74,7 +74,7 @@ export default function SelectCompany() {
    }
    ```
 
-3. **Model only.** The model files import neither React nor the DOM: `dateRange.js`, `rangeField.js`, `textField.js`, `numberField.js`, `dateField.js`, `dropdown.js`, `gridDisplayer.js`, `dataImport.js`, `droppedRows.js`, and `theme/index.js`. They are exported from the root (for a bundler). In plain Node, import the file directly, because the root index pulls in JSX, CSS and JSON. The tests do this:
+3. **Model only.** The model files import neither React nor the DOM: `dateRange.js`, `rangeField.js`, `textField.js`, `numberField.js`, `dateField.js`, `dropdown.js`, `gridDisplayer.js`, `dataImport.js` (with `IMPORT_MODES`, `DEFAULT_MODE`, `targetProblems`, `blocksImport`, `canRollback`, `modeLabel`), `droppedRows.js`, `imports/importsApi.js` (fetch only), and `theme/index.js`. They are exported from the root (for a bundler). In plain Node, import the file directly, because the root index pulls in JSX, CSS and JSON. The tests do this:
 
    ```js
    import { resolveDateValue } from '@xeplr/ui-utils/src/dateRange/dateRange.js'
@@ -97,6 +97,7 @@ export default function SelectCompany() {
 | `NumberFieldPage` | [see below](#numberfieldpage) | Float, currency or units input with an affix picker |
 | `TextFieldPage` | [see below](#textfieldpage) | Text, multiline or search input, themed by `--xeplr-input-text-*` |
 | `FileUploadPage` | [see below](#fileuploadpage) | Drag-and-drop upload with type and size checks and a progress bar |
+| `ImportsPage` | [see below](#importspage) | The whole import screen against `@xeplr/imports`: database picker, import, progress, history |
 | `DataImportPage` | [see below](#dataimportpage) | Upload a file, map its parts to targets, commit |
 | `ImportHistoryPage` | [see below](#importhistorypage) | Past imports in a `XeplrTable`, with Rollback and Delete |
 | `DroppedRowsPage` | [see below](#dropped-rows) | The rows an import's database refused, in a dialog: row, reason, Copy, Download. Built into the two pages above |
@@ -106,7 +107,7 @@ export default function SelectCompany() {
 | `SettingsTreePage` | [see below](#panel-panelsection-panelfield-expanderspage) | Nested groups of settings: cards, branches on a rail, one open per level |
 | `PanelSection`, `PanelField` | [see below](#panel-panelsection-panelfield-expanderspage) | A section card with an icon; a row with the label left and help under the control |
 | `ProgressNotifier` | [see below](#progressnotifier) | Indeterminate bar and a line of text for one event key |
-| `FileUploadSample`, `DataImportSample`, `ImportHistorySample`, `DroppedRowsSample`, `NumberFieldSample`, `DateFieldSample`, `DateRangeSample`, `RangeFieldSample`, `DropdownSample`, `GridDisplayerSample`, `TextFieldSample`, `ColorPickerSample`, `ExpandersSample`, `SettingsTreeSample` | the matching controller's return value | The default designs, usable on their own |
+| `FileUploadSample`, `ImportsSample`, `DataImportSample`, `ImportHistorySample`, `DroppedRowsSample`, `NumberFieldSample`, `DateFieldSample`, `DateRangeSample`, `RangeFieldSample`, `DropdownSample`, `GridDisplayerSample`, `TextFieldSample`, `ColorPickerSample`, `ExpandersSample`, `SettingsTreeSample` | the matching controller's return value | The default designs, usable on their own |
 
 ### Controllers (hooks)
 
@@ -119,7 +120,8 @@ export default function SelectCompany() {
 | `useNumberFieldController(props)` | NumberFieldPage props | `type, raw, numeric, error, placeholder, disabled, decimals, formatDisplay, affix {list, selected, position, labelKey, valueKey} \| null, handleNumberChange, handleAffixChange, handleBlur` |
 | `useTextFieldController(props)` | TextFieldPage props | `type, raw, error, remaining, placeholder, disabled, required, maxLength, rows, label, help, handleChange, handleBlur, handleKeyDown, handleClear` |
 | `useFileUploadController(options)` | FileUploadPage props | `files, uploading, progress, error, result, dragOver, inputRef, handleChange, handleDragOver, handleDragLeave, handleDrop, handleUpload, openFilePicker, removeFile(i), clear, allowedTypes, maxSize, maxFiles` |
-| `useDataImportController(options)` | DataImportPage props | `file, inspecting, inspected, mappings, committing, results, error, handleFileChange, updateMapping(i, patch), setFix(i, key, on), checksOf(part), handleCommit, reset, accept, targetLabel` |
+| `useImportsController(props)` | ImportsPage props | `targets, targetsError, connectionId, dbInfoId, databases, chooseConnection, chooseDatabase, importing, progressText, stop, historyVersion, importProps, historyProps` |
+| `useDataImportController(options)` | DataImportPage props | `file, inspecting, uploadPercent, inspected, mappings, committing, results, error, handleFileChange, updateMapping(i, patch), setFix(i, key, on), checksOf(part), modes, setMode(i, mode), problems (per mapping), checking, blocked, handleCommit, reset, accept, targetLabel` |
 | `useImportHistoryController(options)` | ImportHistoryPage props | `jobs, loading, error, rollingBackId, deletingId, reload, handleRollback(job), handleDelete(job)` |
 | `useDroppedRowsController(options)` | `onLoadDropped`, `onDownloadDropped` | `job, data, table {columns, rows}, summary {heading, note}, loading, error, copied, downloading, canCopy, canDownload, canView(job), open(job), close, copy, download` |
 | `useGridDisplayerController(props)` | GridDisplayerPage props | `query, setQuery, sortFields, sortValue, setSortValue, displayRows, tileFormatComponent, onSelect, onAddNew` |
@@ -167,7 +169,7 @@ export default function SelectCompany() {
 | `deepMerge` | `(base, override)` | Immutable merge. Arrays are replaced, and `undefined` never overwrites a value. |
 | `COUNTRIES` | `[{ code, name }]` | 196 countries |
 | `STATES`, `STATES_IN` | `{ IN: [{ code, name }] }`, `[{ code, name }]` | 36 Indian states and union territories |
-| `FILE_UPLOAD_RULES`, `DATA_IMPORT_RULES`, `IMPORT_HISTORY_RULES`, `DROPPED_ROWS_RULES`, `NUMBER_FIELD_RULES`, `DATE_FIELD_RULES`, `DATE_RANGE_RULES`, `RANGE_FIELD_RULES`, `DROPDOWN_RULES`, `GRID_DISPLAYER_RULES`, `TEXT_FIELD_RULES`, `COLOR_PICKER_RULES`, `EXPANDERS_RULES`, `SETTINGS_TREE_RULES` | rule arrays | What each page requires of a design |
+| `FILE_UPLOAD_RULES`, `IMPORTS_RULES`, `DATA_IMPORT_RULES`, `IMPORT_HISTORY_RULES`, `DROPPED_ROWS_RULES`, `NUMBER_FIELD_RULES`, `DATE_FIELD_RULES`, `DATE_RANGE_RULES`, `RANGE_FIELD_RULES`, `DROPDOWN_RULES`, `GRID_DISPLAYER_RULES`, `TEXT_FIELD_RULES`, `COLOR_PICKER_RULES`, `EXPANDERS_RULES`, `SETTINGS_TREE_RULES` | rule arrays | What each page requires of a design |
 
 ## DropdownPage
 
@@ -292,19 +294,62 @@ configureUpload({ url: '/uploads', getHeaders: () => ({ Authorization: 'Bearer '
 
 `uploadFile` POSTs `multipart/form-data` with `XMLHttpRequest`, so it can report upload progress. The default URL is `/internal/upload`. `getHeaders()`, if set, is called on **every** upload, so headers such as an auth token are always current. Otherwise the static `headers` are used. The response must be JSON. A non-2xx response rejects with the response's `error` or "Upload failed". If any picked file breaks a rule, the whole selection is rejected with a message naming that file.
 
+## ImportsPage
+
+The whole import feature, against [`@xeplr/imports`](https://www.npmjs.com/package/@xeplr/imports)' routes. An app that mounts that router adds one route here and nothing else:
+
+```jsx
+configureUpload({ url: API_BASE + '/imports/files', getHeaders })   // once, at startup — the headers every call carries
+<Route path="/upload" element={<ImportsPage basePath={API_BASE + '/imports'} />} />
+```
+
+| prop | type | meaning |
+|---|---|---|
+| `basePath` | `string` | Where the app mounted the router, as the browser sees it (default `'/imports'`) |
+| `pollMs` | `number` | How often a running import is asked how far it has got (default 1000) |
+
+It shows three things:
+
+1. **The database picker**, filled from `GET /targets`.
+2. **The import itself.** This is `DataImportPage`: its checks, the New table / Append / Replace modes with the file checked against the typed table, the upload percentage, and the dropped rows. While an import runs, its progress shows with its running time and ✕.
+3. **The history.** This is `ImportHistoryPage`, with dropped rows, rollback (none for a Replace) and delete.
+
+Requests carry the headers `configureUpload` was given (`uploadHeaders()`), so sign-in and tenancy need no second setup. The model is `importsApi.js`:
+
+- `createImportsApi(basePath)` makes every route call.
+- Pure helpers: `importProgressText`, `runResults`, `historyJob`, `databasesOf`, `fileNameOf`.
+
+A custom design receives the controller's values plus `importSection` and `historySection` as elements.
+
 ## DataImportPage
 
 | prop | type | meaning |
 |---|---|---|
 | `onInspect` | `(filePath, file) => Promise<{ format, parts?, checks? }>` | **Required.** Say what an uploaded file contains. `parts` holds, for example, an Excel workbook's sheet names. `checks` says what is wrong with a part before it is loaded — see below. |
-| `onCommit` | `(filePath, [{ part, target, fixes }], { originalName }) => Promise<{ results } \| results[]>` | **Required.** Load the included parts into their targets. `fixes` is the person's choice for each fix the checks offered. |
+| `onCommit` | `(filePath, [{ part, target, mode, fixes }], { originalName }) => Promise<{ results } \| results[]>` | **Required.** Load the included parts into their targets. `mode` is `'new'`, `'append'` or `'replace'`; `fixes` is the person's choice for each fix the checks offered. |
+| `onCheckTarget` | `(filePath, { part, target }) => Promise<{ exists, matched, extra, missing: [{ name, required }] } \| null>` | Optional. The part's columns against the table it names, asked as the person types (after a 400 ms pause). Without it nothing is checked and nothing blocked. A new function (another database chosen) asks again. |
 | `accept` | `string` | The file input's `accept` attribute, for example `'.csv,.json,.xlsx,.xls'` |
 | `targetLabel` | `string` | Placeholder for the target name (default `'Target'`) |
+| `onUpload` | `(file, onProgress(percent)) => Promise<{ filePath }>` | Optional: where the file goes (default `uploadFile()` to `configureUpload`'s url). While it uploads, the page shows "Uploading the file… N%" |
 | `onLoadDropped`, `onDownloadDropped` | see [Dropped rows](#dropped-rows) | A result with `dropped > 0` and a `jobId` then says "N dropped — View" |
 
 The file is sent through this package's own `uploadFile()` to the URL set by `configureUpload`, not through a prop. That keeps the component free of app-specific upload wiring. The apps point it at `@xeplr/base-apis`' generic upload route. The upload response must include `filePath`. With `parts`, each part becomes a row (included by default) whose target is `sanitizeTargetName(part)`. Without `parts`, there is one row named after the file. Result rows show `target (part)` and then `rows` + " rows", "Done", or `error`, depending on `success`.
 
 **Checks, before anything is loaded.** `onInspect` may return `checks: { [part]: [{ key, message, fixLabel?, fixDefault?, examples? }] }` (the key `''` for a one-unit file). Each shows under its part as a warning with its message and examples. One with a `fixLabel` offers the fix as a checkbox, on unless `fixDefault: false`; the choice reaches `onCommit` as `fixes[key]`. A result row's `note` is shown under it — what a fix did. The component knows no particular check: the app decides what to look for and what its fix means (BI: rows pasted into one cell, recovered).
+
+**After an import** its mapping clears, because the app has removed the file, and its results stay on screen. The file input is cleared on each click, so choosing the same file again (fixed and saved under its old name) is a new pick.
+
+**New table, Append, Replace.** Each part has a mode, **New table** by default — adding to or emptying a table someone typed the name of is chosen, not assumed. With `onCheckTarget`, what the import will do is said under the part before anything loads (`targetProblems(target, mode, check)`, levels `error` / `warning` / `info` / `ok`):
+
+| mode | the table | said |
+|---|---|---|
+| New table | not there | "A new table … will be created" |
+| New table | there | **error**: "already exists. Choose Append … or Replace …, or type a new name" |
+| Append, Replace | not there | **error**: "There is no table …. Check the name, or choose New table" |
+| Append, Replace | there | file columns the table lacks: **error** (refused); table columns the file lacks: **error** when required (no empty value, no default — every row would be refused), else "left empty"; all matching: "All N columns match" |
+| Replace | there | also a **warning**: it removes every row now in the table, and cannot be rolled back |
+
+An `error` disables Import (`blocked`), as does an empty target or a check still running ("Checking the table…"). The person types the table's name; there is deliberately no list of the database's tables to pick from.
 
 `sanitizeTargetName('Sales 2024.xlsx')` returns `'sales_2024'`. It lowercases, drops the extension, turns runs of non-`[a-z0-9_]` characters into `_`, trims `_` from both ends, and falls back to `'table'`.
 
@@ -317,7 +362,7 @@ The file is sent through this package's own `uploadFile()` to the URL set by `co
 | `onDelete` | `(job) => Promise` | Removes a history record. The Delete button is on every row, so without this prop it fails with an error. |
 | `onLoadDropped`, `onDownloadDropped` | see [Dropped rows](#dropped-rows) | A job with `rowsDropped > 0` gets a **View dropped** action |
 
-Job shape: `{ id, originalFileName, part, target, rows, status: 'completed' | 'failed' | 'rolled-back', startedAt, error, destination?, rowsLoaded?, rowsDropped?, createdByName? }`. Missing optional fields show "—". Both actions ask first with `raiseConfirm` (danger style). The Delete prompt warns that deleting a completed job's record does **not** undo its data and makes it impossible to roll back. The table shows 20 rows per page.
+Job shape: `{ id, originalFileName, part, target, rows, status: 'completed' | 'failed' | 'rolled-back', startedAt, error, destination?, rowsLoaded?, rowsDropped?, mode?, createdByName? }`. `mode` shows beside the target (Replace highlighted), and **a Replace has no Rollback** (`canRollback(job)`): its old rows are gone. Missing optional fields show "—". Both actions ask first with `raiseConfirm` (danger style). The Delete prompt warns that deleting a completed job's record does **not** undo its data and makes it impossible to roll back. The table shows 20 rows per page.
 
 ## Dropped rows
 
@@ -468,6 +513,7 @@ These create their own DOM nodes with inline styles, so they need no provider, m
 | `NUMBER_FIELD_RULES` | `input[inputmode="decimal"]` or `input.xeplr-numberfield-input` |
 | `TEXT_FIELD_RULES` | a text or search input, a `textarea`, or `.xeplr-textfield-input` |
 | `FILE_UPLOAD_RULES` | `input[type="file"]`; `.xeplr-upload-dropzone` or `[role="dropzone"]`; a `button` |
+| `IMPORTS_RULES` | `#xeplr-imports-connection`, `#xeplr-imports-database` |
 | `DATA_IMPORT_RULES` | `input[type="file"]` |
 | `GRID_DISPLAYER_RULES` | `.xeplr-grid-search`; `.xeplr-grid` |
 | `COLOR_PICKER_RULES` | `.xeplr-colorpicker-swatch` or `[role="option"]` |
@@ -546,6 +592,8 @@ npm test
 ```
 
 This runs each `test/*.test.js` with plain `node` and stops at the first failing file. The tests cover the date range model, the range field model, the text field model with `inputStyleVars`, the colour, expander and settings-tree models, and the design rules of the date range, colour picker, expanders and settings tree. CI runs the same files with `node --test` and coverage.
+
+`test/importsApi.test.js` runs the imports model against the real `@xeplr/imports` router: a real Express app, real Postgres and a throwaway `xeplr_configs`. It runs when `PG_HOST`, `PG_PORT`, `PG_USER`, `PG_PASSWORD` and `PG_DATABASE` are set and `XEPLR_IMPORTS_DIR` names the package's folder; otherwise it is skipped. The upload itself uses XMLHttpRequest, so it only runs in a browser, where BI's screen is driven.
 
 ## License
 
