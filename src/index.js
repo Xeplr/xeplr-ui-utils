@@ -17,7 +17,7 @@ export { FileUploadPage } from './fileUpload/pages.jsx';
 // the whole file, for CSV/JSON) to app-defined named targets, commit. The
 // app supplies onInspect/onCommit (its own upload + load endpoints); this
 // module only owns the file-pick -> mapping -> commit flow and UI.
-export { sanitizeTargetName, buildInitialMappings } from './dataImport/dataImport.js';
+export { sanitizeTargetName, buildInitialMappings, IMPORT_MODES, DEFAULT_MODE, targetProblems, blocksImport, canRollback, modeLabel } from './dataImport/dataImport.js';
 
 // DataImport — controller
 export { useDataImportController } from './dataImport/useDataImportController.js';

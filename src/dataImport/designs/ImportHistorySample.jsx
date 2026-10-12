@@ -1,6 +1,7 @@
 import './dataImport.css';
 import { XeplrTable } from '@xeplr/ui-table';
 import { raiseConfirm } from '../../confirm/confirm.js';
+import { canRollback, modeLabel } from '../dataImport.js';
 
 var STATUS_LABEL = {
   completed: 'Completed',
@@ -31,7 +32,21 @@ var SCHEMA = {
         header: 'Destination',
         cell: function(info) { return info.getValue() || '—'; }
       },
-      { accessor: 'target', header: 'Target' },
+      {
+        accessor: 'target',
+        header: 'Target',
+        // How it went in: a Replace is worth seeing at a glance — it is the
+        // one import that cannot be rolled back.
+        cell: function(info) {
+          var job = info.row.original;
+          return (
+            <span>
+              {info.getValue()}
+              {job.mode && <span className={'xeplr-import-history-mode xeplr-import-history-mode-' + job.mode}>{modeLabel(job.mode)}</span>}
+            </span>
+          );
+        }
+      },
       {
         accessor: 'rows',
         header: 'Rows',
@@ -107,7 +122,8 @@ export default function ImportHistorySample({ jobs, loading, error, rollingBackI
       key: 'rollback',
       label: 'Rollback',
       variant: 'danger',
-      visible: function(job) { return job.status === 'completed'; },
+      // A Replace cannot be undone: its old rows are gone.
+      visible: function(job) { return canRollback(job); },
       disabled: function(job) { return rollingBackId === job.id; },
       onClick: onRollbackClick
     },

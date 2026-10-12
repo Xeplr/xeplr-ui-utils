@@ -162,3 +162,48 @@
 .xeplr-data-import-dropped-actions { display: flex; align-items: center; gap: 8px; }
 .xeplr-data-import-dropped-spacer { flex: 1; }
 .xeplr-data-import-result-dropped { color: var(--xeplr-text-secondary, #999); font-size: 13px; }
+
+/* ── What the import does to its table, and what that will mean ── */
+.xeplr-data-import-mapping-row { flex-wrap: wrap; }
+.xeplr-data-import-mode {
+  display: inline-flex;
+  border: 1px solid var(--xeplr-border-primary, #444);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.xeplr-data-import-mode-option {
+  padding: 6px 12px;
+  border: none;
+  border-right: 1px solid var(--xeplr-border-primary, #444);
+  background: var(--xeplr-bg-secondary, #232323);
+  color: var(--xeplr-text-secondary, #999);
+  font-size: 13px;
+  cursor: pointer;
+}
+.xeplr-data-import-mode-option:last-child { border-right: none; }
+.xeplr-data-import-mode-option-on { background: var(--xeplr-accent, #646cff); color: var(--xeplr-accent-text, #fff); }
+.xeplr-data-import-mode-option:disabled { opacity: 0.5; cursor: default; }
+.xeplr-data-import-target {
+  flex-basis: 100%;
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+}
+.xeplr-data-import-target li { padding: 6px 10px; border-radius: 6px; border: 1px solid transparent; }
+.xeplr-data-import-target-error { color: var(--xeplr-danger, #ff6b6b); background: var(--xeplr-danger-bg, #3d1111); border-color: var(--xeplr-danger-border, #5a1a1a); }
+.xeplr-data-import-target-warning { color: var(--xeplr-warning, #a86a00); background: var(--xeplr-warning-bg, rgba(168, 106, 0, 0.08)); border-color: var(--xeplr-warning, #a86a00); }
+.xeplr-data-import-target-info { color: var(--xeplr-text-secondary, #999); background: var(--xeplr-bg-secondary, #222); }
+.xeplr-data-import-target-ok { color: var(--xeplr-success, #6bcc6b); }
+.xeplr-import-history-mode {
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  background: var(--xeplr-bg-secondary, #222);
+  color: var(--xeplr-text-secondary, #999);
+}
+.xeplr-import-history-mode-replace { color: var(--xeplr-warning, #a86a00); background: var(--xeplr-warning-bg, rgba(168, 106, 0, 0.08)); }

@@ -74,7 +74,7 @@ export default function SelectCompany() {
    }
    ```
 
-3. **Model only.** The model files import neither React nor the DOM: `dateRange.js`, `rangeField.js`, `textField.js`, `numberField.js`, `dateField.js`, `dropdown.js`, `gridDisplayer.js`, `dataImport.js`, `droppedRows.js`, and `theme/index.js`. They are exported from the root (for a bundler). In plain Node, import the file directly, because the root index pulls in JSX, CSS and JSON. The tests do this:
+3. **Model only.** The model files import neither React nor the DOM: `dateRange.js`, `rangeField.js`, `textField.js`, `numberField.js`, `dateField.js`, `dropdown.js`, `gridDisplayer.js`, `dataImport.js` (with `IMPORT_MODES`, `DEFAULT_MODE`, `targetProblems`, `blocksImport`, `canRollback`, `modeLabel`), `droppedRows.js`, and `theme/index.js`. They are exported from the root (for a bundler). In plain Node, import the file directly, because the root index pulls in JSX, CSS and JSON. The tests do this:
 
    ```js
    import { resolveDateValue } from '@xeplr/ui-utils/src/dateRange/dateRange.js'
@@ -119,7 +119,7 @@ export default function SelectCompany() {
 | `useNumberFieldController(props)` | NumberFieldPage props | `type, raw, numeric, error, placeholder, disabled, decimals, formatDisplay, affix {list, selected, position, labelKey, valueKey} \| null, handleNumberChange, handleAffixChange, handleBlur` |
 | `useTextFieldController(props)` | TextFieldPage props | `type, raw, error, remaining, placeholder, disabled, required, maxLength, rows, label, help, handleChange, handleBlur, handleKeyDown, handleClear` |
 | `useFileUploadController(options)` | FileUploadPage props | `files, uploading, progress, error, result, dragOver, inputRef, handleChange, handleDragOver, handleDragLeave, handleDrop, handleUpload, openFilePicker, removeFile(i), clear, allowedTypes, maxSize, maxFiles` |
-| `useDataImportController(options)` | DataImportPage props | `file, inspecting, inspected, mappings, committing, results, error, handleFileChange, updateMapping(i, patch), setFix(i, key, on), checksOf(part), handleCommit, reset, accept, targetLabel` |
+| `useDataImportController(options)` | DataImportPage props | `file, inspecting, inspected, mappings, committing, results, error, handleFileChange, updateMapping(i, patch), setFix(i, key, on), checksOf(part), modes, setMode(i, mode), problems (per mapping), checking, blocked, handleCommit, reset, accept, targetLabel` |
 | `useImportHistoryController(options)` | ImportHistoryPage props | `jobs, loading, error, rollingBackId, deletingId, reload, handleRollback(job), handleDelete(job)` |
 | `useDroppedRowsController(options)` | `onLoadDropped`, `onDownloadDropped` | `job, data, table {columns, rows}, summary {heading, note}, loading, error, copied, downloading, canCopy, canDownload, canView(job), open(job), close, copy, download` |
 | `useGridDisplayerController(props)` | GridDisplayerPage props | `query, setQuery, sortFields, sortValue, setSortValue, displayRows, tileFormatComponent, onSelect, onAddNew` |
@@ -297,7 +297,8 @@ configureUpload({ url: '/uploads', getHeaders: () => ({ Authorization: 'Bearer '
 | prop | type | meaning |
 |---|---|---|
 | `onInspect` | `(filePath, file) => Promise<{ format, parts?, checks? }>` | **Required.** Say what an uploaded file contains. `parts` holds, for example, an Excel workbook's sheet names. `checks` says what is wrong with a part before it is loaded — see below. |
-| `onCommit` | `(filePath, [{ part, target, fixes }], { originalName }) => Promise<{ results } \| results[]>` | **Required.** Load the included parts into their targets. `fixes` is the person's choice for each fix the checks offered. |
+| `onCommit` | `(filePath, [{ part, target, mode, fixes }], { originalName }) => Promise<{ results } \| results[]>` | **Required.** Load the included parts into their targets. `mode` is `'new'`, `'append'` or `'replace'`; `fixes` is the person's choice for each fix the checks offered. |
+| `onCheckTarget` | `(filePath, { part, target }) => Promise<{ exists, matched, extra, missing: [{ name, required }] } \| null>` | Optional. The part's columns against the table it names, asked as the person types (after a 400 ms pause). Without it nothing is checked and nothing blocked. A new function (another database chosen) asks again. |
 | `accept` | `string` | The file input's `accept` attribute, for example `'.csv,.json,.xlsx,.xls'` |
 | `targetLabel` | `string` | Placeholder for the target name (default `'Target'`) |
 | `onLoadDropped`, `onDownloadDropped` | see [Dropped rows](#dropped-rows) | A result with `dropped > 0` and a `jobId` then says "N dropped — View" |
@@ -305,6 +306,18 @@ configureUpload({ url: '/uploads', getHeaders: () => ({ Authorization: 'Bearer '
 The file is sent through this package's own `uploadFile()` to the URL set by `configureUpload`, not through a prop. That keeps the component free of app-specific upload wiring. The apps point it at `@xeplr/base-apis`' generic upload route. The upload response must include `filePath`. With `parts`, each part becomes a row (included by default) whose target is `sanitizeTargetName(part)`. Without `parts`, there is one row named after the file. Result rows show `target (part)` and then `rows` + " rows", "Done", or `error`, depending on `success`.
 
 **Checks, before anything is loaded.** `onInspect` may return `checks: { [part]: [{ key, message, fixLabel?, fixDefault?, examples? }] }` (the key `''` for a one-unit file). Each shows under its part as a warning with its message and examples. One with a `fixLabel` offers the fix as a checkbox, on unless `fixDefault: false`; the choice reaches `onCommit` as `fixes[key]`. A result row's `note` is shown under it — what a fix did. The component knows no particular check: the app decides what to look for and what its fix means (BI: rows pasted into one cell, recovered).
+
+**New table, Append, Replace.** Each part has a mode, **New table** by default — adding to or emptying a table someone typed the name of is chosen, not assumed. With `onCheckTarget`, what the import will do is said under the part before anything loads (`targetProblems(target, mode, check)`, levels `error` / `warning` / `info` / `ok`):
+
+| mode | the table | said |
+|---|---|---|
+| New table | not there | "A new table … will be created" |
+| New table | there | **error**: "already exists. Choose Append … or Replace …, or type a new name" |
+| Append, Replace | not there | **error**: "There is no table …. Check the name, or choose New table" |
+| Append, Replace | there | file columns the table lacks: **error** (refused); table columns the file lacks: **error** when required (no empty value, no default — every row would be refused), else "left empty"; all matching: "All N columns match" |
+| Replace | there | also a **warning**: it removes every row now in the table, and cannot be rolled back |
+
+An `error` disables Import (`blocked`), as does an empty target or a check still running ("Checking the table…"). The person types the table's name; there is deliberately no list of the database's tables to pick from.
 
 `sanitizeTargetName('Sales 2024.xlsx')` returns `'sales_2024'`. It lowercases, drops the extension, turns runs of non-`[a-z0-9_]` characters into `_`, trims `_` from both ends, and falls back to `'table'`.
 
@@ -317,7 +330,7 @@ The file is sent through this package's own `uploadFile()` to the URL set by `co
 | `onDelete` | `(job) => Promise` | Removes a history record. The Delete button is on every row, so without this prop it fails with an error. |
 | `onLoadDropped`, `onDownloadDropped` | see [Dropped rows](#dropped-rows) | A job with `rowsDropped > 0` gets a **View dropped** action |
 
-Job shape: `{ id, originalFileName, part, target, rows, status: 'completed' | 'failed' | 'rolled-back', startedAt, error, destination?, rowsLoaded?, rowsDropped?, createdByName? }`. Missing optional fields show "—". Both actions ask first with `raiseConfirm` (danger style). The Delete prompt warns that deleting a completed job's record does **not** undo its data and makes it impossible to roll back. The table shows 20 rows per page.
+Job shape: `{ id, originalFileName, part, target, rows, status: 'completed' | 'failed' | 'rolled-back', startedAt, error, destination?, rowsLoaded?, rowsDropped?, mode?, createdByName? }`. `mode` shows beside the target (Replace highlighted), and **a Replace has no Rollback** (`canRollback(job)`): its old rows are gone. Missing optional fields show "—". Both actions ask first with `raiseConfirm` (danger style). The Delete prompt warns that deleting a completed job's record does **not** undo its data and makes it impossible to roll back. The table shows 20 rows per page.
 
 ## Dropped rows
 
