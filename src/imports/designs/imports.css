@@ -1,0 +1,29 @@
+/* Uses @xeplr/ui-account's --xeplr-* theme tokens when available, with the
+   same dark fallbacks as dataImport.css. */
+.xeplr-imports { display: flex; flex-direction: column; gap: 20px; color: var(--xeplr-text-primary, #e0e0e0); }
+.xeplr-imports-card {
+  padding: 20px;
+  border: 1px solid var(--xeplr-border-secondary, #2a2a2a);
+  border-radius: 12px;
+  background: var(--xeplr-bg-primary, #1a1a1a);
+}
+.xeplr-imports-title { margin: 0 0 4px; font-size: 18px; font-weight: 600; }
+.xeplr-imports-hint { margin: 0 0 14px; font-size: 13px; color: var(--xeplr-text-secondary, #999); }
+.xeplr-imports-error {
+  margin-bottom: 12px; padding: 10px 12px; border-radius: 6px; font-size: 13px;
+  background: var(--xeplr-danger-bg, #3d1111); color: var(--xeplr-danger, #ff6b6b); border: 1px solid var(--xeplr-danger-border, #5a1a1a);
+}
+.xeplr-imports-pickers { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.xeplr-imports-field { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--xeplr-text-secondary, #999); }
+.xeplr-imports-field select {
+  padding: 9px 10px; border-radius: 6px; font-size: 14px; font-family: inherit;
+  border: 1px solid var(--xeplr-border-primary, #444);
+  background: var(--xeplr-bg-secondary, #232323);
+  color: var(--xeplr-text-primary, #e0e0e0);
+}
+.xeplr-imports-progress { display: flex; align-items: center; gap: 10px; margin: 0 0 12px; font-size: 13px; }
+.xeplr-imports-clock { color: var(--xeplr-text-secondary, #999); font-variant-numeric: tabular-nums; }
+.xeplr-imports-stop {
+  padding: 2px 8px; border-radius: 4px; cursor: pointer; font-size: 12px;
+  border: 1px solid var(--xeplr-border-primary, #444); background: none; color: var(--xeplr-text-secondary, #999);
+}

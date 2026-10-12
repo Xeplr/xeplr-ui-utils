@@ -24,6 +24,10 @@ import { buildInitialMappings, checksFor, targetProblems, blocksImport, IMPORT_M
  *     empty, a table that already exists) is said before anything is loaded.
  *     Without it no check is made and nothing is blocked.
  *
+ * @param {(file: File, onProgress: (percent) => void) => Promise<{filePath}>} [options.onUpload]
+ *   - optional: send the file somewhere other than configureUpload's url
+ *     (ImportsPage sends it to @xeplr/imports' /files). Default uploadFile().
+ *
  * The actual file transfer is NOT app-supplied — handleFileChange sends the
  * picked file through @xeplr/ui-utils' own uploadFile() (see
  * fileUpload/uploadFile.js), which every app configures ONCE via
@@ -36,6 +40,8 @@ import { buildInitialMappings, checksFor, targetProblems, blocksImport, IMPORT_M
 export function useDataImportController(options = {}) {
   var [file, setFile] = useState(null);
   var [inspecting, setInspecting] = useState(false);
+  // How much of the file has gone up, 0–100 — a 300 MB file takes a while.
+  var [uploadPercent, setUploadPercent] = useState(null);
   var [inspected, setInspected] = useState(null);
   var [mappings, setMappings] = useState([]);
   var [committing, setCommitting] = useState(false);
@@ -72,7 +78,11 @@ export function useDataImportController(options = {}) {
     setFile(picked);
     setInspecting(true);
     try {
-      var uploadRes = await uploadFile(picked);
+      setUploadPercent(0);
+      var uploadRes = options.onUpload
+        ? await options.onUpload(picked, setUploadPercent)
+        : await uploadFile(picked, { onProgress: setUploadPercent });
+      setUploadPercent(null);
       var inspectRes = await options.onInspect(uploadRes.filePath, picked);
       var merged = Object.assign({ filePath: uploadRes.filePath, originalName: picked.name }, inspectRes);
       setInspected(merged);
@@ -80,6 +90,7 @@ export function useDataImportController(options = {}) {
     } catch (err) {
       setError(err.message || 'Failed to upload/inspect file');
     } finally {
+      setUploadPercent(null);
       setInspecting(false);
     }
   }
@@ -143,6 +154,10 @@ export function useDataImportController(options = {}) {
       var payload = included.map(function(m) { return { part: m.part, target: String(m.target).trim(), mode: m.mode, fixes: m.fixes || {} }; });
       var res = await options.onCommit(inspected.filePath, payload, { originalName: inspected.originalName });
       setResults((res && res.results) || res || []);
+      // The file is gone once imported (the app removes it), so its mapping
+      // goes too: the results stay, and the next import starts from a file.
+      setInspected(null);
+      setMappings([]);
     } catch (err) {
       setError(err.message || 'Import failed');
     } finally {
@@ -151,7 +166,7 @@ export function useDataImportController(options = {}) {
   }
 
   return {
-    file, inspecting, inspected, mappings, committing, results, error,
+    file, inspecting, uploadPercent, inspected, mappings, committing, results, error,
     handleFileChange, updateMapping, setFix, handleCommit, reset,
     // The import's mode per part, what its target will do, and whether that stops it.
     modes: IMPORT_MODES,

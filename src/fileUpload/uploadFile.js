@@ -10,6 +10,16 @@ export function configureUpload(config = {}) {
 }
 
 /**
+ * The headers every request to the app's API carries — what configureUpload
+ * was given (getHeaders, called each time so a token is current, or static
+ * headers). Exported so a page calling the app's JSON routes signs them the
+ * same way as its uploads, without a second configuration.
+ */
+export function uploadHeaders() {
+  return Object.assign({}, _config.getHeaders ? _config.getHeaders() : _config.headers);
+}
+
+/**
  * Upload files to the server.
  * @param {File[]} files - Files to upload
  * @param {object} [options]
