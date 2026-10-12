@@ -1,18 +1,25 @@
 import './dataImport.css';
 
 export default function DataImportSample({
-  file, inspecting, inspected, mappings, committing, results, error,
+  file, inspecting, uploadPercent, inspected, mappings, committing, results, error,
   handleFileChange, updateMapping, setFix, checksOf, handleCommit, reset, accept, targetLabel,
   canViewDropped, viewDropped, modes, setMode, problems, checking, blocked
 }) {
   return (
     <div className="xeplr-data-import">
       <label className="xeplr-data-import-dropzone">
-        <input type="file" accept={accept} onChange={handleFileChange} />
+        {/* Cleared on each pick, so choosing the same file again — fixed and
+            saved under its old name — is a new pick, not nothing. */}
+        <input type="file" accept={accept} onChange={handleFileChange}
+          onClick={function(e) { e.currentTarget.value = ''; }} />
         {file ? file.name : 'Choose a file to import'}
       </label>
 
-      {inspecting && <p className="xeplr-data-import-hint">Inspecting file…</p>}
+      {inspecting && (
+        <p className="xeplr-data-import-hint">
+          {uploadPercent != null && uploadPercent < 100 ? 'Uploading the file… ' + uploadPercent + '%' : 'Inspecting file…'}
+        </p>
+      )}
       {error && <div className="xeplr-data-import-alert xeplr-data-import-alert-error">{error}</div>}
 
       {inspected && mappings.length > 0 && (

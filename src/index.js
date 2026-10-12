@@ -50,6 +50,16 @@ export { DROPPED_ROWS_RULES } from './dataImport/validateDesign.js';
 export { DroppedRowsSample } from './dataImport/designs/index.js';
 export { DroppedRowsPage } from './dataImport/pages.jsx';
 
+// Imports — the whole import screen against @xeplr/imports' routes: database
+// picker, import (DataImportPage), progress with ✕, history (ImportHistoryPage).
+// <ImportsPage basePath="/api/imports" /> is all an app adds.
+export { createImportsApi, importProgressText, runResults, historyJob, databasesOf, fileNameOf } from './imports/importsApi.js';
+export { useImportsController } from './imports/useImportsController.js';
+export { IMPORTS_RULES } from './imports/validateDesign.js';
+export { ImportsSample } from './imports/designs/index.js';
+export { ImportsPage } from './imports/pages.jsx';
+export { uploadHeaders } from './fileUpload/uploadFile.js';
+
 // NumberField — model
 export {
   NUMBER_TYPES,
