@@ -171,6 +171,23 @@ export default function SelectCompany() {
 | `STATES`, `STATES_IN` | `{ IN: [{ code, name }] }`, `[{ code, name }]` | 36 Indian states and union territories |
 | `FILE_UPLOAD_RULES`, `IMPORTS_RULES`, `DATA_IMPORT_RULES`, `IMPORT_HISTORY_RULES`, `DROPPED_ROWS_RULES`, `NUMBER_FIELD_RULES`, `DATE_FIELD_RULES`, `DATE_RANGE_RULES`, `RANGE_FIELD_RULES`, `DROPDOWN_RULES`, `GRID_DISPLAYER_RULES`, `TEXT_FIELD_RULES`, `COLOR_PICKER_RULES`, `EXPANDERS_RULES`, `SETTINGS_TREE_RULES` | rule arrays | What each page requires of a design |
 
+## Where you are lives in the URL: `useUrlParams`, `useUrlState`
+
+The suite's rule: every screen state a person navigates to (an open editor or drawer, the selected record, the active tab or step, a dialog that is a place) is read from and written to the URL's query, so a refresh or a shared link lands on exactly the same screen. Transient things (hover, a half-typed form, a toast) are not.
+
+```js
+import { useUrlParams, useUrlState } from '@xeplr/ui-utils/src/url/useUrlState.js'
+
+const [tab, setTab] = useUrlState('tab', { default: 'canvas', replace: true })   // switching: no history entry
+const [drawer, setDrawer] = useUrlState('drawer')                                // opening/closing: Back closes it
+const url = useUrlParams({ tab: 'canvas' })
+url.set({ widget: id, drawer: null })                                              // several at once
+```
+
+- **Opening or closing** something adds a history entry; **switching** a tab or step, or typing, replaces it (`replace: true`).
+- `null`, `''`, `false` and a value equal to its default are removed from the URL; `true` is written as `1`.
+- Imported from `src/url/useUrlState.js`, not the package root, because it needs `react-router-dom` (an optional peer) and a consumer without a router shouldn't have to install one. The pure rule is `src/url/urlState.js` (`patchSearch`, `readSearch`), tested in `test/urlState.test.js`.
+
 ## DropdownPage
 
 | prop | type | default | meaning |
