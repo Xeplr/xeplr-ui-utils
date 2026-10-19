@@ -186,6 +186,8 @@ url.set({ widget: id, drawer: null })                                           
 
 - **Opening or closing** something adds a history entry; **switching** a tab or step, or typing, replaces it (`replace: true`).
 - `null`, `''`, `false` and a value equal to its default are removed from the URL; `true` is written as `1`.
+- **Writes start from the live address** (with `BrowserRouter`), so a write from a handler that ran after an `await`, or a second write in the same click, never puts back what an earlier write removed. Under a router that doesn't mirror the address (e.g. `MemoryRouter`), writes in one render are chained instead.
+- **In memory, same rules:** with no router above, or `useUrlParams(defaults, { inUrl: false })` / `useUrlState(key, { inUrl: false })`, state lives in the component, e.g. for an editor embedded in a page whose URL and keys belong to that page.
 - Imported from `src/url/useUrlState.js`, not the package root, because it needs `react-router-dom` (an optional peer) and a consumer without a router shouldn't have to install one. The pure rule is `src/url/urlState.js` (`patchSearch`, `readSearch`), tested in `test/urlState.test.js`.
 
 ## DropdownPage
