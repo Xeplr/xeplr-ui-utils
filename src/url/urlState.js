@@ -31,3 +31,28 @@ export function readSearch(params, key, fallback) {
   const v = params.get(key)
   return v === null || v === '' ? (fallback === undefined ? null : fallback) : v
 }
+
+// TWO WRITES IN ONE CLICK MUST BOTH LAND. react-router builds each
+// setSearchParams from the query the last render saw, so a second write in
+// the same handler — from this hook or another one on the page — would start
+// from the old query and undo the first. Each write is chained onto the one
+// before it while the page has not re-rendered: `pending` is the query last
+// written, `pendingFrom` the rendered query it was built on. Once the URL
+// has moved on, they no longer match and are ignored.
+let pending = null
+let pendingFrom = null
+
+export function writeFrom(rendered, patch, defaults) {
+  const seen = rendered.toString()
+  const base = pending !== null && pendingFrom === seen ? pending : rendered
+  const next = patchSearch(base, patch, defaults)
+  pending = next
+  pendingFrom = seen
+  return next
+}
+
+/** The query a write in this click should read from (see writeFrom). */
+export function pendingBase(rendered) {
+  return pending !== null && pendingFrom === rendered.toString() ? pending : rendered
+}
+
