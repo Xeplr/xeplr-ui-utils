@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { patchSearch, readSearch } from './urlState.js'
+import { readSearch, writeFrom, pendingBase } from './urlState.js'
 
 /**
  * Read and write screen state in the URL's query (see urlState.js).
@@ -22,8 +22,8 @@ export function useUrlParams(defaults) {
   const [params, setParams] = useSearchParams()
   const get = useCallback((key) => readSearch(params, key, defaults ? defaults[key] : undefined), [params, defaults])
   const set = useCallback((patch, opts) => {
-    setParams((prev) => patchSearch(prev, patch, defaults), { replace: Boolean(opts && opts.replace) })
-  }, [setParams, defaults])
+    setParams(writeFrom(params, patch, defaults), { replace: Boolean(opts && opts.replace) })
+  }, [params, setParams, defaults])
   return { get: get, set: set, params: params }
 }
 
@@ -38,12 +38,10 @@ export function useUrlState(key, opts) {
   const value = readSearch(params, key, o.default)
   const setValue = useCallback((v, callOpts) => {
     const replace = callOpts && callOpts.replace !== undefined ? callOpts.replace : Boolean(o.replace)
-    setParams((prev) => {
-      const current = readSearch(prev, key, o.default)
-      const next = typeof v === 'function' ? v(current) : v
-      const defaults = o.default !== undefined ? { [key]: o.default } : undefined
-      return patchSearch(prev, { [key]: next }, defaults)
-    }, { replace: replace })
-  }, [setParams, key, o.default, o.replace])
+    const current = readSearch(pendingBase(params), key, o.default)
+    const next = typeof v === 'function' ? v(current) : v
+    const defaults = o.default !== undefined ? { [key]: o.default } : undefined
+    setParams(writeFrom(params, { [key]: next }, defaults), { replace: replace })
+  }, [params, setParams, key, o.default, o.replace])
   return [value, setValue]
 }
