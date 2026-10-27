@@ -525,6 +525,10 @@ await sources.fetchSuggestions('procedureParams', { connectionId, procedure })  
 - **`key`** names the list in a hand-written endpoint's answer (default `dataArray`). Guessing it wrong would show an empty list and no error.
 - **Pure, no React, no login of its own:** the host passes its own fetch.
 
+## `fieldLabel`
+
+A schema field's name as words, when it has no `label` of its own: `connectionInfoId` → **Connection**, `dbInfoId` → **Database**, `streaming_mode` → **Streaming mode**, `timeoutMs` → **Timeout (ms)**. `Id` / `Info` are dropped: you pick a connection, not its id. Used by `@xeplr/ui-jobs` and X-Flow's step editor.
+
 ## raiseSnackbar, raiseConfirm, raiseChoice
 
 ```js

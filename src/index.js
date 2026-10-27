@@ -241,3 +241,7 @@ export { ExpandersPage, SettingsTreePage } from './panel/pages.jsx';
 // Option sources — where a KIND of thing an input names (`optionsFrom`) is
 // listed. Shared by @xeplr/ui-jobs and X-Flow's step editor.
 export { createOptionSources } from './optionSources/optionSources.js';
+
+// Field labels — a schema field's name as words ("connectionInfoId" →
+// "Connection"). Shared by @xeplr/ui-jobs and X-Flow's step editor.
+export { fieldLabel } from './fields/fieldLabel.js';
