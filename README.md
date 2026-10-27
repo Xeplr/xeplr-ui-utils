@@ -500,6 +500,30 @@ Event contract: `{ key, continue: true | false, status?, data }`. `continue: fal
 
 With no source attached, every notifier renders `idle` and nothing else.
 
+## Option sources: `createOptionSources`
+
+An action's input can name a KIND of thing to choose from (`optionsFrom: 'connections'`). The host says once where each kind lives, and a screen offers a list instead of a box to type an id into. Used by `@xeplr/ui-jobs`' job editor and X-Flow's step editor.
+
+```js
+import { createOptionSources } from '@xeplr/ui-utils'
+import { authFetch } from '@xeplr/ui-account'
+
+const sources = createOptionSources({
+  connections: { url: '/connectioninfo', value: 'id', label: 'label' },
+  databases:   { url: '/dbinfo', value: 'id', label: 'dbName' },
+  tables:      { url: '/warehouse/tables', value: 'id', label: 'name', key: 'tables' }
+}, (path) => authFetch(path))
+
+sources.has('connections')                       // true: show a list
+await sources.fetchOptions('connections')         // [{ value, label }]
+await sources.fetchOptions('databases', { name: 'connectionId', value: 'c1', clientKey: 'connectionId' })
+await sources.fetchSuggestions('procedureParams', { connectionId, procedure })   // ['from', 'to']
+```
+
+- **A kind nobody configured** is `has() === false`: show a text box. An empty dropdown looks broken.
+- **`key`** names the list in a hand-written endpoint's answer (default `dataArray`). Guessing it wrong would show an empty list and no error.
+- **Pure, no React, no login of its own:** the host passes its own fetch.
+
 ## raiseSnackbar, raiseConfirm, raiseChoice
 
 ```js

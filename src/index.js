@@ -237,3 +237,7 @@ export { useSettingsTreeController } from './panel/useSettingsTreeController.js'
 export { EXPANDERS_RULES, SETTINGS_TREE_RULES } from './panel/validateDesign.js';
 export { PanelSection, PanelField, ExpandersSample, SettingsTreeSample } from './panel/designs/index.js';
 export { ExpandersPage, SettingsTreePage } from './panel/pages.jsx';
+
+// Option sources — where a KIND of thing an input names (`optionsFrom`) is
+// listed. Shared by @xeplr/ui-jobs and X-Flow's step editor.
+export { createOptionSources } from './optionSources/optionSources.js';
