@@ -17,9 +17,19 @@
 // (@xeplr/ui-account's authFetch), so this package never learns about logins.
 
 /**
- * @param {object} sources    { kind: { url, value?='id', label?, key?='dataArray' } }
+ * @param {object} sources    { kind: { url, value?='id', label?, key?='dataArray', where? } }
  * @param {Function} fetchJson (path) → Promise of the parsed answer
  */
+// `where`: only rows with these values, e.g. { connectionType: 'api' } so a
+// step that calls an API lists API connections and not database ones. Sent as
+// query values, and checked again here for an endpoint that ignores them.
+function whereQuery(src) {
+  return Object.entries(src.where || {}).map(([k, v]) => `&${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('')
+}
+function matchesWhere(src, row) {
+  return Object.entries(src.where || {}).every(([k, v]) => row[k] === v)
+}
+
 export function createOptionSources(sources, fetchJson) {
   const all = sources || {}
 
@@ -35,13 +45,14 @@ export function createOptionSources(sources, fetchJson) {
   async function fetchOptions(kind, filter) {
     const src = all[kind]
     if (!src) return []
-    const q = filter && filter.value ? `&${encodeURIComponent(filter.name)}=${encodeURIComponent(filter.value)}` : ''
+    const q = (filter && filter.value ? `&${encodeURIComponent(filter.name)}=${encodeURIComponent(filter.value)}` : '') + whereQuery(src)
     const res = await fetchJson(`${src.url}?limit=0${q}`)
     // `dataArray` is what a generic route answers; a hand-written endpoint
     // answers with its own key, which the host names. Guessing wrong would
     // give an empty list and no error, which reads as "you have none".
     const rows = (res && res[src.key || 'dataArray']) || []
     return rows
+      .filter((r) => matchesWhere(src, r))
       .filter((r) => (filter && filter.clientKey ? r[filter.clientKey] === filter.value : true))
       .map((r) => ({ value: r[src.value || 'id'], label: r[src.label] || r[src.value || 'id'] }))
   }

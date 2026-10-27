@@ -521,6 +521,7 @@ await sources.fetchSuggestions('procedureParams', { connectionId, procedure })  
 ```
 
 - **A kind nobody configured** is `has() === false`: show a text box. An empty dropdown looks broken.
+- **`where`** keeps only rows with those values, e.g. `{ connectionType: 'api' }`: sent to the server as query values and checked again in the browser.
 - **`key`** names the list in a hand-written endpoint's answer (default `dataArray`). Guessing it wrong would show an empty list and no error.
 - **Pure, no React, no login of its own:** the host passes its own fetch.
 
