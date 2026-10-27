@@ -26,6 +26,12 @@
 function whereQuery(src) {
   return Object.entries(src.where || {}).map(([k, v]) => `&${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('')
 }
+// The list in an answer: under `key` (default dataArray), or the answer
+// itself when it IS a list — the auth service's /admin/roles answers so.
+function listOf(res, src) {
+  if (Array.isArray(res)) return res
+  return (res && res[src.key || 'dataArray']) || []
+}
 function matchesWhere(src, row) {
   return Object.entries(src.where || {}).every(([k, v]) => row[k] === v)
 }
@@ -50,7 +56,7 @@ export function createOptionSources(sources, fetchJson) {
     // `dataArray` is what a generic route answers; a hand-written endpoint
     // answers with its own key, which the host names. Guessing wrong would
     // give an empty list and no error, which reads as "you have none".
-    const rows = (res && res[src.key || 'dataArray']) || []
+    const rows = listOf(res, src)
     return rows
       .filter((r) => matchesWhere(src, r))
       .filter((r) => (filter && filter.clientKey ? r[filter.clientKey] === filter.value : true))
@@ -69,7 +75,7 @@ export function createOptionSources(sources, fetchJson) {
     if (pairs.some(([, v]) => v === undefined || v === null || v === '')) return []
     const q = pairs.map(([k, v]) => `&${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('')
     const res = await fetchJson(`${src.url}?limit=0${q}`)
-    const list = (res && res[src.key || 'dataArray']) || []
+    const list = listOf(res, src)
     return list.map((o) => String(o[src.value || 'value'])).filter(Boolean)
   }
 
