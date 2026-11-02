@@ -90,3 +90,8 @@ textarea.xeplr-textfield-input { resize: vertical; min-height: 64px; }
 }
 .xeplr-textfield-error { color: var(--xeplr-input-text-invalid-color, #c2372e); }
 .xeplr-textfield-count { color: var(--xeplr-input-text-label-color, #6b6a63); text-align: right; }
+
+/* On a phone: under 16px, iOS zooms the whole page when the field is focused. */
+@media (max-width: 640px) {
+  .xeplr-textfield-input { font-size: max(16px, var(--xeplr-input-text-font-size, 12.5px)); }
+}
