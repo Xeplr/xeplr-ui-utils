@@ -570,6 +570,10 @@ These create their own DOM nodes with inline styles, so they need no provider, m
 | `IMPORT_HISTORY_RULES` | nothing |
 | `DROPPED_ROWS_RULES` | `#xeplr-dropped-rows-copy`, `#xeplr-dropped-rows-download`, `#xeplr-dropped-rows-close` — checked when the dialog opens, since it is not on the page before |
 
+## On a phone
+
+Below 640px wide every text, number and date input, and a dropdown's trigger and search box, is at least **16px** — smaller makes iOS zoom the whole page when the field is focused (a text field keeps a larger `--xeplr-input-text-font-size` if the theme sets one). A dropdown's trigger is 44px tall. A panel field puts its label above the control instead of in a 112px column. Nothing has a fixed width that can push a 360px page sideways: the grid's cards, the import pickers, the date-range box and the range field all shrink to the space they have. Nothing changes above 640px.
+
 ## Theming
 
 The designs use `xeplr-*` class prefixes (`xeplr-dropdown-*`, `xeplr-daterange-*`, `xeplr-rangefield-*`, `xeplr-datefield-*`, `xeplr-numberfield-*`, `xeplr-textfield-*`, `xeplr-upload-*`, `xeplr-data-import-*`, `xeplr-import-history-*`, `xeplr-grid-*`, `xeplr-colorpicker-*`, `xeplr-panel-*`, `xeplr-expander-*`, `xeplr-tree-*`). The progress notifier uses `xpn`, `xpn--running` / `--complete` / `--error`, `xpn-bar` and `xpn-text`. What each design reads:

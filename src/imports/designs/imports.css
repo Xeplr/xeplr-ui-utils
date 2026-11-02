@@ -13,7 +13,7 @@
   margin-bottom: 12px; padding: 10px 12px; border-radius: 6px; font-size: 13px;
   background: var(--xeplr-danger-bg, #3d1111); color: var(--xeplr-danger, #ff6b6b); border: 1px solid var(--xeplr-danger-border, #5a1a1a);
 }
-.xeplr-imports-pickers { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.xeplr-imports-pickers { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: 12px; }
 .xeplr-imports-field { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--xeplr-text-secondary, #999); }
 .xeplr-imports-field select {
   padding: 9px 10px; border-radius: 6px; font-size: 14px; font-family: inherit;

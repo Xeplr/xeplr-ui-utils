@@ -58,3 +58,8 @@
   font-size: 12px;
   color: #e25555;
 }
+
+/* On a phone: under 16px, iOS zooms the whole page when the field is focused. */
+@media (max-width: 640px) {
+  .xeplr-datefield-input { font-size: 16px; }
+}

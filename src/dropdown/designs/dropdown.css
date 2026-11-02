@@ -224,3 +224,10 @@
   color: var(--xeplr-accent, #9fb2ff);
   font-weight: 700;
 }
+
+/* On a phone: a target a thumb can hit, and text large enough that iOS does
+   not zoom the page when the search box inside is focused. */
+@media (max-width: 640px) {
+  .xeplr-dropdown-trigger { min-height: 44px; font-size: 16px; }
+  .xeplr-dropdown-search-input { font-size: 16px; }
+}

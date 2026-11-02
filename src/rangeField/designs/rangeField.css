@@ -10,7 +10,7 @@
   flex-direction: column;
   gap: 6px;
   flex: 1;
-  min-width: 160px;
+  min-width: min(160px, 100%);
 }
 .xeplr-rangefield-label {
   font-size: 12px;

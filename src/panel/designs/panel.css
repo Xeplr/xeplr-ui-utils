@@ -70,3 +70,9 @@
   padding: 14px; border-top: 1px solid var(--xeplr-border-secondary, #eef0f4);
   display: flex; flex-direction: column; gap: 12px;
 }
+
+/* On a phone the label goes above its control: a fixed 112px label column
+   leaves the control a sliver of a 360px screen. */
+@media (max-width: 640px) {
+  .xeplr-panel-field { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+}
