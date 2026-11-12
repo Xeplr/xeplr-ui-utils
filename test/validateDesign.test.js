@@ -24,16 +24,23 @@ const branchOf = (tab) => {
   return design.slice(start, next.length ? Math.min(...next) : design.length)
 }
 const always = design.slice(0, design.indexOf("props.tab === 'quick'"))
+// type="date" may also be written type={withTime ? 'datetime-local' : 'date'}.
+const has = (text, tok) => {
+  if (text.includes(tok)) return true
+  const m = /^type="([^"]+)"$/.exec(tok)
+  return Boolean(m) && text.includes('type={') && text.includes("'" + m[1] + "'")
+}
 
 console.log('\nthe design really is tabbed')
 check('the quick branch holds the preset list', branchOf('quick').includes('xeplr-daterange-list'))
-check('the range branch holds the date inputs', branchOf('range').includes('type="date"'))
+check('the range branch holds the date inputs', has(branchOf('range'), 'type="date"'))
+check('with times, the range inputs are datetime-local', has(branchOf('range'), 'type="datetime-local"'))
 check('the single branch holds the text input', branchOf('single').includes('xeplr-daterange-input'))
 // This is the fact the old rules ignored.
 check('no branch holds both a preset list and a date input',
   !['quick', 'range', 'single'].some((t) => {
     const b = branchOf(t)
-    return b.includes('xeplr-daterange-list') && (b.includes('type="date"') || b.includes('xeplr-daterange-input'))
+    return b.includes('xeplr-daterange-list') && (has(b, 'type="date"') || b.includes('xeplr-daterange-input'))
   }))
 
 console.log('\nevery rule is satisfiable')
@@ -50,7 +57,7 @@ for (const rule of DATE_RANGE_RULES) {
     // An anyOf rule needs at least one alternative in EVERY branch, or there
     // is still a tab on which it cannot pass — which was the whole bug.
     check(`"${rule.label}" is satisfiable on every tab`,
-      ['quick', 'range', 'single'].every((t) => rule.anyOf.some((s) => branchOf(t).includes(token(s)))))
+      ['quick', 'range', 'single'].every((t) => rule.anyOf.some((s) => has(branchOf(t), token(s)))))
   } else {
     // A single-selector rule must match something OUTSIDE the branches, or it
     // fails on every tab that doesn't happen to contain it. That is exactly

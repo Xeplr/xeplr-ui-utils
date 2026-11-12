@@ -3,7 +3,7 @@ import { toValue, normalise, validate, remaining, TEXT_TYPES } from './textField
 
 /**
  * @param {object} props
- * @param {'text'|'multiline'|'search'} [props.type='text']
+ * @param {'text'|'multiline'|'search'|'password'} [props.type='text']
  * @param {string} [props.value]          — controlled
  * @param {string} [props.defaultValue]   — uncontrolled initial
  * @param {(value) => void} [props.onChange]

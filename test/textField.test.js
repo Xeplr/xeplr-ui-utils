@@ -39,7 +39,7 @@ check('no limit means nothing to count', remaining('abc', null) === null);
 check('counts down', remaining('abc', 10) === 7);
 
 console.log('\nthree shapes, one control');
-check('text, multiline and search', TEXT_TYPES.join() === 'text,multiline,search');
+check('text, multiline, search and password', TEXT_TYPES.join() === 'text,multiline,search,password');
 
 console.log('\nthe theme drives the look — no design fork needed');
 {

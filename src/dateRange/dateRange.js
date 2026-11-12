@@ -246,15 +246,18 @@ export function resolveDateValue(value, now, options) {
   return null
 }
 
+// A range with times (DateRange withTime) reads "2026-11-12 09:30", not "…T09:30".
+function shown(v) { return String(v).replace('T', ' ') }
+
 /** What the chip and the panel read. */
 export function dateValueLabel(value) {
   if (!value) return null
   if (value.kind === 'quick') return PRESET_LABEL.get(value.preset) || value.preset
   if (value.kind === 'single') return value.value || null
   if (value.kind === 'range') {
-    if (value.from && value.to) return `${value.from} → ${value.to}`
-    if (value.from) return `From ${value.from}`
-    if (value.to) return `Until ${value.to}`
+    if (value.from && value.to) return `${shown(value.from)} → ${shown(value.to)}`
+    if (value.from) return `From ${shown(value.from)}`
+    if (value.to) return `Until ${shown(value.to)}`
     return null
   }
   return null
