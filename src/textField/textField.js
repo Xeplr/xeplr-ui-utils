@@ -1,14 +1,14 @@
 /**
  * TextField — pure model. No React.
  *
- * The plain text input, and the two shapes that are the same control with a
- * different edge: a multi-line one and a search one. Kept together because
+ * The plain text input, and the shapes that are the same control with a
+ * different edge: a multi-line one, a search one, and a password one (masked). Kept together because
  * they are one thing to style — an app that wants a bottom-rule-only textbox
  * wants a bottom-rule-only search box too, and splitting them is how those
  * drift apart.
  */
 
-export var TEXT_TYPES = ['text', 'multiline', 'search'];
+export var TEXT_TYPES = ['text', 'multiline', 'search', 'password'];
 
 /**
  * What the control accepts as a value. Anything nullish is the empty string:

@@ -95,7 +95,7 @@ export default function SelectCompany() {
 | `RangeFieldPage` | [see below](#rangefieldpage) | A From and a To date input drawn as one field, each bounded by the other |
 | `DateFieldPage` | [see below](#datefieldpage) | Date, datetime, or date of birth with the age computed |
 | `NumberFieldPage` | [see below](#numberfieldpage) | Float, currency or units input with an affix picker |
-| `TextFieldPage` | [see below](#textfieldpage) | Text, multiline or search input, themed by `--xeplr-input-text-*` |
+| `TextFieldPage` | [see below](#textfieldpage) | Text, multiline, search or password input, themed by `--xeplr-input-text-*` |
 | `FileUploadPage` | [see below](#fileuploadpage) | Drag-and-drop upload with type and size checks and a progress bar |
 | `ImportsPage` | [see below](#importspage) | The whole import screen against `@xeplr/imports`: database picker, import, progress, history |
 | `DataImportPage` | [see below](#dataimportpage) | Upload a file, map its parts to targets, commit |
@@ -128,7 +128,8 @@ export default function SelectCompany() {
 | `useColorPickerController(props)` | ColorPickerPage props | `label, value, hex, opacity, swatches [{color, selected}], custom, allowNone, allowOpacity, previewText, pick(hex), setOpacity(0–100), clear` |
 | `useExpandersController(props)` | ExpandersPage props | `items` (each with `open`), `toggle(key)` |
 | `useSettingsTreeController(props)` | SettingsTreePage props | `nodes` (each with `open`, `depth`, `parentKey`, `children`), `toggle(parentKey, key)` |
-| `useDesignValidator(name, rules)` | page name, rule list | a ref for the design's container |
+| `useDesignValidator(name, rules)` | page name, rule list | a ref for the design's container (reports, lets it load) |
+| `useDesignCheck(rules, state)` | rule list (with `when`), the state `when` reads | `{ ref, missing }`: render an error instead of the design while `missing` is not empty |
 
 ### Model functions (no React)
 
@@ -144,7 +145,7 @@ export default function SelectCompany() {
 | `RANGE_TYPES`, `emptyRange`, `normalizeRange`, `rangeIsSet` | `['date','datetime']`, `() → {from:'',to:''}`, `(r) → {from,to}`, `(r) → boolean` | From/to helpers. A range with one side set counts as set. |
 | `DATE_TYPES`, `isValidISODate`, `calculateAge`, `inputTypeFor`, `toInputValue`, `validateBounds` | `['date','datetime','age']`, `(s)`, `(dob, now?)`, `(type)`, `(value, type)`, `(value, min, max) → { valid, error? }` | Date field helpers |
 | `NUMBER_TYPES`, `sanitizeNumberInput`, `toNumeric`, `formatDisplay`, `validateRange`, `resolveAffixState` | `['float','currency','units']`, `(raw)`, `(raw) → number \| null`, `(value, decimals?)`, `(value, min, max) → { valid, error? }`, `(type, options)` | Number field helpers. `sanitizeNumberInput` keeps digits, the first `.`, and a leading `-`. |
-| `TEXT_TYPES`, `toValue`, `normalise`, `validate`, `remaining` | `['text','multiline','search']`, `(raw) → string`, `(raw, { trim, maxLength })`, `(raw, { required, requiredMessage, minLength, maxLength, pattern, patternMessage }) → string \| null`, `(raw, maxLength) → number \| null` | Text field helpers |
+| `TEXT_TYPES`, `toValue`, `normalise`, `validate`, `remaining` | `['text','multiline','search','password']`, `(raw) → string`, `(raw, { trim, maxLength })`, `(raw, { required, requiredMessage, minLength, maxLength, pattern, patternMessage }) → string \| null`, `(raw, maxLength) → number \| null` | Text field helpers |
 | `DROPDOWN_MODES`, `normalizeKeys`, `sortByKey`, `filterByQuery`, `pickSelected` | `['single','multi']`, `(keys) → { id, name, extras }`, `(items, key)`, `(items, query, searchKeys)`, `(items, ids, idKey)` | Dropdown helpers |
 | `DEFAULT_SWATCHES`, `parseColor`, `formatColor`, `sameHue` | `[hex]`, `(css) → { hex, opacity } \| null`, `(hex, opacity) → css \| null`, `(a, b) → boolean` | Colour helpers. Opacity 100 writes `#RRGGBB`; anything less writes `#RRGGBBAA`. |
 | `toggleOpen`, `initialOpen` | `(open, key, multiple?) → keys`, `(items, initial?, multiple?) → keys` | Which expanders are open |
@@ -226,6 +227,7 @@ url.set({ widget: id, drawer: null })                                           
 | `onClose` | `() => void` | — | Called after a choice that ends the interaction: a preset, a suggestion, Apply (or Enter) in Range or Single, or Clear |
 | `presets` | `[{ key, label }]` | `QUICK_PRESETS` | The Quick list. Only keys that `resolveQuickPreset` knows will resolve. |
 | `allowClear` | `boolean` | `true` | `false` removes the Clear button, and `clear()` refuses too |
+| `withTime` | `boolean` | `false` | The Range tab's From and To take a time too (`datetime-local`, `"2026-11-12T09:30"`), for what is read by the minute, such as a log. The label reads `2026-11-12 09:30 → …`; From after To is caught to the minute. Presets and Single still name whole days |
 | `inheritedLabel` | `string` | — | Shows "Using …" when `value` is empty |
 
 **Every selection resolves to `{ from, to }`, including a single date.** "May 2022" becomes 1–31 May and "2022" becomes the whole year, so a consumer never has to ask which comparison was meant. **The Range tab is applied, not taken as you type.** A browser date input holds a complete date while a year is half typed (`2` is `0002-01-01`), so committing each edit ran the host's query for the year 2. The inputs edit a draft, and `onChange` fires once, on **Apply** or Enter. Apply is disabled until the draft is valid (`rangeProblem`: something chosen, From not after To) and differs from what is applied. One open side is allowed. The Single tab commits only once the text parses ("Not a date yet" otherwise), on blur, Enter or Apply. While you type, it suggests months and years, putting the committed year first. The financial-year presets use `fiscalStartMonth` (default April). The page itself does not pass that option, so change it by calling `resolveDateValue(value, now, { fiscalStartMonth })` where you consume the value.
@@ -275,7 +277,7 @@ The input is `type="text" inputMode="decimal"`. Typing is sanitised. An affix li
 
 | prop | type | default | meaning |
 |---|---|---|---|
-| `type` | `'text' \| 'multiline' \| 'search'` | `'text'` | Any other value throws |
+| `type` | `'text' \| 'multiline' \| 'search' \| 'password'` | `'text'` | `'password'` is masked. Any other value throws |
 | `value` / `defaultValue` | `string` | — | Controlled / uncontrolled. `null` and `undefined` become `''`. |
 | `onChange` | `(value) => void` | — | Every keystroke |
 | `onCommit` | `(value) => void` | — | On blur, or Enter in a single-line field, after `trim` / `maxLength` are applied |
@@ -552,6 +554,22 @@ These create their own DOM nodes with inline styles, so they need no provider, m
 
 `useDesignValidator(name, rules)` returns a ref. After mount it checks, **once**, that the container has each required element. A rule is `{ id | role | selector | anyOf: [selectors], label }`. For every rule that fails it logs `[xeplr-ui-utils] <name> design is missing required elements: …` with `console.error`, and it sets `data-xeplr-design-invalid="<name>"` and a `title` on the container.
 
+### A design that must not load without its controls: `useDesignCheck`
+
+`useDesignValidator` reports and lets the design load. For a page whose design must **not** load without its controls (a sign-in without a password box, a monitor without its Restart button), use `useDesignCheck(rules, state)`:
+
+```jsx
+import { useDesignCheck } from '@xeplr/ui-utils'
+
+const check = useDesignCheck(LOGIN_RULES, controller)
+if (check.missing.length) return <Broken missing={check.missing} />   // your own error view
+return <div ref={check.ref}><Design {...controller} /></div>
+```
+
+- Rules are the same shapes as above, plus **`when(state)`**: checked only while it holds (`{ selector: '#code', label: 'Code input', when: (c) => c.needsCode }`).
+- Checked after **every** render, since `when` depends on what is open. Once something is missing it stays missing, and the page shows the error rather than a design that half works.
+- `missingFrom(root, rules, state)` is the same check with no React: the labels of the broken rules.
+
 | rules | require |
 |---|---|
 | `DROPDOWN_RULES` | `.xeplr-dropdown-trigger` or `[role="combobox"]`; `.xeplr-dropdown-panel` or `[role="listbox"]` |
@@ -559,7 +577,7 @@ These create their own DOM nodes with inline styles, so they need no provider, m
 | `RANGE_FIELD_RULES` | `.xeplr-rangefield-field` |
 | `DATE_FIELD_RULES` | `input[type="date"]`, `input[type="datetime-local"]` or `.xeplr-datefield-input` |
 | `NUMBER_FIELD_RULES` | `input[inputmode="decimal"]` or `input.xeplr-numberfield-input` |
-| `TEXT_FIELD_RULES` | a text or search input, a `textarea`, or `.xeplr-textfield-input` |
+| `TEXT_FIELD_RULES` | a text, search or password input, a `textarea`, or `.xeplr-textfield-input` |
 | `FILE_UPLOAD_RULES` | `input[type="file"]`; `.xeplr-upload-dropzone` or `[role="dropzone"]`; a `button` |
 | `IMPORTS_RULES` | `#xeplr-imports-connection`, `#xeplr-imports-database` |
 | `DATA_IMPORT_RULES` | `input[type="file"]` |

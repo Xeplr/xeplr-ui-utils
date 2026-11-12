@@ -13,6 +13,9 @@ import { QUICK_PRESETS, parseSingleDate, dateValueLabel, singleDateSuggestions, 
  * @param {boolean} [props.allowClear]   - default true. Set false where an
  *   empty selection is not a state the host can accept — a report bounded by
  *   a date, say, for which "no date" means scanning all of history.
+ * @param {boolean} [props.withTime]     - default false. The From/To of a range
+ *   take a time too ("2026-11-12T09:30"), for what is read by the minute, such
+ *   as a log. Presets and Single still name whole days.
  */
 export function useDateRangeController(props) {
   var value = props.value || null;
@@ -138,6 +141,7 @@ export function useDateRangeController(props) {
     commitSingle: commitSingle,
     clear: clear,
     allowClear: allowClear,
+    withTime: Boolean(props.withTime),
     inheritedLabel: props.inheritedLabel || null
   };
 }

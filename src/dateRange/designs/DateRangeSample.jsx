@@ -61,12 +61,12 @@ export default function DateRangeSample(props) {
               the year 2. Enter in either input applies too. */}
           <label className="xeplr-daterange-field">
             <span>From</span>
-            <input type="date" value={props.range.from || ''} onChange={function(e) { props.setRangeFrom(e.target.value); }}
+            <input type={props.withTime ? 'datetime-local' : 'date'} value={props.range.from || ''} onChange={function(e) { props.setRangeFrom(e.target.value); }}
               onKeyDown={function(e) { if (e.key === 'Enter') { e.preventDefault(); props.applyRange(); } }} />
           </label>
           <label className="xeplr-daterange-field">
             <span>To</span>
-            <input type="date" value={props.range.to || ''} onChange={function(e) { props.setRangeTo(e.target.value); }}
+            <input type={props.withTime ? 'datetime-local' : 'date'} value={props.range.to || ''} onChange={function(e) { props.setRangeTo(e.target.value); }}
               onKeyDown={function(e) { if (e.key === 'Enter') { e.preventDefault(); props.applyRange(); } }} />
           </label>
           {/* One-sided is legitimate — "everything since April" is a real

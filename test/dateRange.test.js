@@ -132,6 +132,14 @@ check('nothing chosen cannot be applied', rangeProblem({ from: '', to: '' }) ===
 check('From after To cannot be applied', rangeProblem({ from: '2026-04-01', to: '2026-03-31' }) === 'From is after To')
 check('a missing draft counts as nothing chosen', rangeProblem(null) === 'Choose a From or a To date')
 
+console.log('\nwith times (DateRange withTime)')
+check('a range with times reads with a space, not a T',
+  dateValueLabel({ kind: 'range', from: '2026-11-12T09:30', to: '2026-11-12T10:00' }) === '2026-11-12 09:30 → 2026-11-12 10:00')
+check('one-sided too', dateValueLabel({ kind: 'range', from: '2026-11-12T09:30' }) === 'From 2026-11-12 09:30')
+check('From after To is caught to the minute', rangeProblem({ from: '2026-11-12T10:00', to: '2026-11-12T09:59' }) === 'From is after To')
+check('the same day, later time, is fine', rangeProblem({ from: '2026-11-12T09:00', to: '2026-11-12T09:30' }) === null)
+check('the range resolves to exactly what was typed', JSON.stringify(resolveDateValue({ kind: 'range', from: '2026-11-12T09:30', to: '2026-11-12T10:00' })) === '{"from":"2026-11-12T09:30","to":"2026-11-12T10:00"}')
+
 const failed = results.filter(([, ok]) => !ok)
 console.log(`\n${results.length - failed.length}/${results.length} passed`)
 process.exit(failed.length ? 1 : 0)

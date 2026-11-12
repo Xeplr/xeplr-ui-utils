@@ -13,6 +13,7 @@ export var DATE_RANGE_RULES = [
       '.xeplr-daterange-list button',
       '[data-xeplr-daterange-preset]',
       'input[type="date"]',
+      'input[type="datetime-local"]',
       '.xeplr-daterange-input'
     ],
     label: 'A way to pick a date — a quick preset list, or a date input'

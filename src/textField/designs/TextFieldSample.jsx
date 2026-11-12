@@ -38,7 +38,7 @@ export default function TextFieldSample({
         ) : (
           <input
             className="xeplr-textfield-input"
-            type={search ? 'search' : 'text'}
+            type={search ? 'search' : type === 'password' ? 'password' : 'text'}
             value={raw}
             placeholder={placeholder}
             disabled={disabled}

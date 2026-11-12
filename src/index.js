@@ -7,6 +7,12 @@ export { useFileUploadController } from './fileUpload/useFileUploadController.js
 // File Upload — design validation
 export { useDesignValidator, FILE_UPLOAD_RULES } from './fileUpload/validateDesign.js';
 
+// DesignCheck — the BLOCKING design check: a page whose design lacks a
+// required element renders an error naming it instead of the design. Rules
+// as useDesignValidator's, plus `when(state)`; checked after every render.
+export { missingFrom, ruleSelectors, ruleApplies, ruleLabel } from './designCheck/designCheck.js';
+export { useDesignCheck } from './designCheck/useDesignCheck.js';
+
 // File Upload — sample design
 export { FileUploadSample } from './fileUpload/designs/index.js';
 
