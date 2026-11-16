@@ -7,6 +7,22 @@
 
 import { uploadFile, uploadHeaders } from '../fileUpload/uploadFile.js';
 
+/**
+ * How a picked file is sent: the app's own `upload` when it gives one —
+ * handed the file, the progress callback and the standard sender, so it can
+ * keep the standard one for most files and send a big one its own way (in
+ * pieces, say) — else the standard: one request to /files. Either answers
+ * { filePath } inside the tenant's uploads/ folder, which is all the import
+ * needs.
+ */
+export function uploaderFor(api, upload) {
+  if (typeof upload !== 'function') return function(file, onProgress) { return api.upload(file, onProgress); };
+  return function(file, onProgress) { return upload(file, onProgress, { standard: api.upload }); };
+}
+
+/** The files the import reads, for the file input. */
+export var ACCEPT = '.csv,.json,.xlsx,.xls,.parquet';
+
 /** The import routes under one base path. Every call rejects with the server's own `error`. */
 export function createImportsApi(basePath) {
   var base = String(basePath || '/imports').replace(/\/+$/, '');

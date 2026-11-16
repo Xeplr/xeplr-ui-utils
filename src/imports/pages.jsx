@@ -1,4 +1,5 @@
 import { useImportsController } from './useImportsController.js';
+import { ACCEPT } from './importsApi.js';
 import ImportsSample from './designs/ImportsSample.jsx';
 import { IMPORTS_RULES } from './validateDesign.js';
 import { useDesignValidator } from '../dataImport/validateDesign.js';
@@ -17,7 +18,7 @@ export function ImportsPage(props) {
   return (
     <div ref={ref}>
       <ImportsSample {...c}
-        importSection={<DataImportPage accept=".csv,.json,.xlsx,.xls" targetLabel="Table name" {...c.importProps} />}
+        importSection={<DataImportPage accept={props.accept || ACCEPT} targetLabel="Table name" {...c.importProps} />}
         historySection={<ImportHistoryPage key={c.historyVersion} {...c.historyProps} />} />
     </div>
   );

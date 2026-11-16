@@ -328,6 +328,8 @@ configureUpload({ url: API_BASE + '/imports/files', getHeaders })   // once, at 
 |---|---|---|
 | `basePath` | `string` | Where the app mounted the router, as the browser sees it (default `'/imports'`) |
 | `pollMs` | `number` | How often a running import is asked how far it has got (default 1000) |
+| `upload` | `(file, onProgress(percent), { standard }) => Promise<{ filePath }>` | Optional: the app's own way to send a file. It decides per file — `standard(file, onProgress)` is the usual one request to `/files`; a file too big for one request can be sent another way (in pieces, say) into the tenant's `uploads/` folder, and the answer's `filePath` is imported like any other. Xeplr BI sends files over 200 MB in chunks this way, on Pro and up (`importsApi.js` `uploaderFor`) |
+| `accept` | `string` | The file input's `accept` (default `ACCEPT`: `.csv,.json,.xlsx,.xls,.parquet`) |
 
 It shows three things:
 
@@ -338,7 +340,7 @@ It shows three things:
 Requests carry the headers `configureUpload` was given (`uploadHeaders()`), so sign-in and tenancy need no second setup. The model is `importsApi.js`:
 
 - `createImportsApi(basePath)` makes every route call.
-- Pure helpers: `importProgressText`, `runResults`, `historyJob`, `databasesOf`, `fileNameOf`.
+- Pure helpers: `importProgressText`, `runResults`, `historyJob`, `databasesOf`, `fileNameOf`, `uploaderFor(api, upload)` (how a picked file is sent), `ACCEPT` (exported as `IMPORT_ACCEPT`: the files it reads, Parquet among them).
 
 A custom design receives the controller's values plus `importSection` and `historySection` as elements.
 

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { createImportsApi, importProgressText, runResults, historyJob, databasesOf } from './importsApi.js';
+import { createImportsApi, importProgressText, runResults, historyJob, databasesOf, uploaderFor } from './importsApi.js';
 
 /**
  * The whole import screen against @xeplr/imports' routes: which database,
@@ -10,6 +10,7 @@ import { createImportsApi, importProgressText, runResults, historyJob, databases
  * @param {object} props
  * @param {string} [props.basePath='/imports'] - where the app mounted the router, as the browser sees it
  * @param {number} [props.pollMs=1000] - how often a running import is asked how far it has got
+ * @param {(file, onProgress, { standard }) => Promise<{ filePath }>} [props.upload] - the app's own way to send a file (see uploaderFor)
  */
 export function useImportsController(props = {}) {
   var api = useMemo(function() { return createImportsApi(props.basePath); }, [props.basePath]);
@@ -42,7 +43,8 @@ export function useImportsController(props = {}) {
     setDbInfoId((databasesOf(targets, id)[0] || {}).id || '');
   }
 
-  var onUpload = useCallback(function(file, onProgress) { return api.upload(file, onProgress); }, [api]);
+  var upload = props.upload;
+  var onUpload = useMemo(function() { return uploaderFor(api, upload); }, [api, upload]);
 
   var onInspect = useCallback(async function(filePath) {
     var found = await api.inspect(filePath);
