@@ -120,7 +120,7 @@ export default function SelectCompany() {
 | `useNumberFieldController(props)` | NumberFieldPage props | `type, raw, numeric, error, placeholder, disabled, decimals, formatDisplay, affix {list, selected, position, labelKey, valueKey} \| null, handleNumberChange, handleAffixChange, handleBlur` |
 | `useTextFieldController(props)` | TextFieldPage props | `type, raw, error, remaining, placeholder, disabled, required, maxLength, rows, label, help, handleChange, handleBlur, handleKeyDown, handleClear` |
 | `useFileUploadController(options)` | FileUploadPage props | `files, uploading, progress, error, result, dragOver, inputRef, handleChange, handleDragOver, handleDragLeave, handleDrop, handleUpload, openFilePicker, removeFile(i), clear, allowedTypes, maxSize, maxFiles` |
-| `useImportsController(props)` | ImportsPage props | `targets, targetsError, connectionId, dbInfoId, databases, chooseConnection, chooseDatabase, importing, progressText, stop, historyVersion, importProps, historyProps` |
+| `useImportsController(props)` | ImportsPage props | `targets, targetsError, connectionId, dbInfoId, databases, chooseConnection, chooseDatabase, importing` (`{ runId, kind: 'check' \| 'import', startedAt, progress }`), `progressText, stop, historyVersion, importProps, historyProps` |
 | `useDataImportController(options)` | DataImportPage props | `file, inspecting, uploadPercent, inspected, mappings, committing, results, error, handleFileChange, updateMapping(i, patch), setFix(i, key, on), checksOf(part), modes, setMode(i, mode), problems (per mapping), checking, blocked, handleCommit, reset, accept, targetLabel` |
 | `useImportHistoryController(options)` | ImportHistoryPage props | `jobs, loading, error, rollingBackId, deletingId, reload, handleRollback(job), handleDelete(job)` |
 | `useDroppedRowsController(options)` | `onLoadDropped`, `onDownloadDropped` | `job, data, table {columns, rows}, summary {heading, note}, loading, error, copied, downloading, canCopy, canDownload, canView(job), open(job), close, copy, download` |
@@ -327,20 +327,22 @@ configureUpload({ url: API_BASE + '/imports/files', getHeaders })   // once, at 
 | prop | type | meaning |
 |---|---|---|
 | `basePath` | `string` | Where the app mounted the router, as the browser sees it (default `'/imports'`) |
-| `pollMs` | `number` | How often a running import is asked how far it has got (default 1000) |
+| `events` | `{ subscribe(handler) → unsubscribe, isLive?() → boolean }` | Optional, recommended: the app's event stream (SSE), on which `@xeplr/imports` (its `publish` option) tells each check and import as it moves and when it ends. With it the page **waits on the stream**: it asks `GET /runs/:id` once after a run starts (it may have ended before its id came back), and again only every 15 s as a safety net, or every `pollMs` while `isLive()` is false. `handler` gets each event's data; anything but `type: 'import-run'` is ignored. Pass the same object on every render. Xeplr BI passes `{ subscribe: subscribeToRunEvents, isLive: streamIsLive }` on topic `user:me:imports` |
+| `pollMs` | `number` | How often a running check or import is asked how far it has got when there is no stream, or it is down (default 1000) |
 | `upload` | `(file, onProgress(percent), { standard }) => Promise<{ filePath }>` | Optional: the app's own way to send a file. It decides per file — `standard(file, onProgress)` is the usual one request to `/files`; a file too big for one request can be sent another way (in pieces, say) into the tenant's `uploads/` folder, and the answer's `filePath` is imported like any other. Xeplr BI sends files over 200 MB in chunks this way, on Pro and up (`importsApi.js` `uploaderFor`) |
 | `accept` | `string` | The file input's `accept` (default `ACCEPT`: `.csv,.json,.xlsx,.xls,.parquet`) |
 
 It shows three things:
 
 1. **The database picker**, filled from `GET /targets`.
-2. **The import itself.** This is `DataImportPage`: its checks, the New table / Append / Replace modes with the file checked against the typed table, the upload percentage, and the dropped rows. While an import runs, its progress shows with its running time and ✕.
+2. **The import itself.** This is `DataImportPage`: its checks, the New table / Append / Replace modes with the file checked against the typed table, the upload percentage, and the dropped rows. **The check runs in the background** (`POST /inspect` with `background: true`): it reads every row of a CSV, which on a file of gigabytes takes minutes, past a proxy's wait (nginx's 60 s gave a 504). While the check or an import runs, its progress shows with its running time and ✕ — for the check "Checking the file · 1.2 GB of 3.0 GB (40%) · 412,000 rows". Needs `@xeplr/imports` 2.0.2+; an older server answers the check at once and is used as before.
 3. **The history.** This is `ImportHistoryPage`, with dropped rows, rollback (none for a Replace) and delete.
 
 Requests carry the headers `configureUpload` was given (`uploadHeaders()`), so sign-in and tenancy need no second setup. The model is `importsApi.js`:
 
 - `createImportsApi(basePath)` makes every route call.
-- Pure helpers: `importProgressText`, `runResults`, `historyJob`, `databasesOf`, `fileNameOf`, `uploaderFor(api, upload)` (how a picked file is sent), `ACCEPT` (exported as `IMPORT_ACCEPT`: the files it reads, Parquet among them).
+- `createRunWatcher({ api, events?, pollMs? })` → `{ wait(runId, onProgress) → Promise<run>, close() }`: waits for a check or an import as described under `events`, without React. A run whose `GET /runs/:id` fails (with several API processes it may be held by another one) is still heard ending on the stream.
+- Pure helpers: `importProgressText`, `checkProgressText`, `runResults`, `checkResult` (a finished check in `onInspect`'s shape, or its error), `historyJob`, `databasesOf`, `fileNameOf`, `uploaderFor(api, upload)` (how a picked file is sent), `ACCEPT` (exported as `IMPORT_ACCEPT`: the files it reads, Parquet among them).
 
 A custom design receives the controller's values plus `importSection` and `historySection` as elements.
 
@@ -665,7 +667,7 @@ npm test
 
 This runs each `test/*.test.js` with plain `node` and stops at the first failing file. The tests cover the date range model, the range field model, the text field model with `inputStyleVars`, the colour, expander and settings-tree models, and the design rules of the date range, colour picker, expanders and settings tree. CI runs the same files with `node --test` and coverage.
 
-`test/importsApi.test.js` runs the imports model against the real `@xeplr/imports` router: a real Express app, real Postgres and a throwaway `xeplr_configs`. It runs when `PG_HOST`, `PG_PORT`, `PG_USER`, `PG_PASSWORD` and `PG_DATABASE` are set and `XEPLR_IMPORTS_DIR` names the package's folder; otherwise it is skipped. The upload itself uses XMLHttpRequest, so it only runs in a browser, where BI's screen is driven.
+`test/importsApi.test.js` runs the imports model against the real `@xeplr/imports` router: a real Express app, real Postgres and a throwaway `xeplr_configs`. It runs when `PG_HOST`, `PG_PORT`, `PG_USER`, `PG_PASSWORD` and `PG_DATABASE` are set and `XEPLR_IMPORTS_DIR` names the package's folder; otherwise it is skipped. It also opens a real event stream (`@xeplr/base-apis` `sse` over HTTP, the router publishing to it) and checks that a 400,000-row check is heard on it, asked about once instead of every 50 ms, with its progress; that a run another process holds is still heard ending; that a stopped check says so; and that with the stream down it is asked about again. The upload itself uses XMLHttpRequest, so it only runs in a browser, where BI's screen is driven.
 
 ## License
 

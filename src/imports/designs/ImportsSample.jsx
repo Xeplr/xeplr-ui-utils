@@ -45,7 +45,7 @@ export default function ImportsSample({
           <p className="xeplr-imports-progress">
             {progressText}
             <RunClock startedAt={importing.startedAt} />
-            <button type="button" className="xeplr-imports-stop" title="Stop this import" onClick={stop}>✕</button>
+            <button type="button" className="xeplr-imports-stop" title={importing.kind === 'check' ? 'Stop this check' : 'Stop this import'} onClick={stop}>✕</button>
           </p>
         )}
         {importSection}
@@ -60,7 +60,7 @@ export default function ImportsSample({
   );
 }
 
-/** "12 s", "3 min 4 s" — how long the import has been running. */
+/** "12 s", "3 min 4 s" — how long the check or import has been running. */
 function RunClock({ startedAt }) {
   var [now, setNow] = useState(Date.now());
   useEffect(function() {

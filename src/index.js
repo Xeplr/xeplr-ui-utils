@@ -59,7 +59,10 @@ export { DroppedRowsPage } from './dataImport/pages.jsx';
 // Imports — the whole import screen against @xeplr/imports' routes: database
 // picker, import (DataImportPage), progress with ✕, history (ImportHistoryPage).
 // <ImportsPage basePath="/api/imports" /> is all an app adds.
-export { createImportsApi, importProgressText, runResults, historyJob, databasesOf, fileNameOf, uploaderFor, ACCEPT as IMPORT_ACCEPT } from './imports/importsApi.js';
+export {
+  createImportsApi, importProgressText, checkProgressText, runResults, checkResult, createRunWatcher, historyJob, databasesOf,
+  fileNameOf, uploaderFor, ACCEPT as IMPORT_ACCEPT
+} from './imports/importsApi.js';
 export { useImportsController } from './imports/useImportsController.js';
 export { IMPORTS_RULES } from './imports/validateDesign.js';
 export { ImportsSample } from './imports/designs/index.js';

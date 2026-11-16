@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { createImportsApi, importProgressText, runResults, historyJob, databasesOf, uploaderFor } from './importsApi.js';
+import {
+  createImportsApi, importProgressText, checkProgressText, runResults, checkResult, historyJob, databasesOf, uploaderFor,
+  createRunWatcher
+} from './importsApi.js';
 
 /**
  * The whole import screen against @xeplr/imports' routes: which database,
@@ -9,18 +12,23 @@ import { createImportsApi, importProgressText, runResults, historyJob, databases
  *
  * @param {object} props
  * @param {string} [props.basePath='/imports'] - where the app mounted the router, as the browser sees it
- * @param {number} [props.pollMs=1000] - how often a running import is asked how far it has got
+ * @param {number} [props.pollMs=1000] - how often a running check or import is asked how far it has got, when there is no event stream
  * @param {(file, onProgress, { standard }) => Promise<{ filePath }>} [props.upload] - the app's own way to send a file (see uploaderFor)
+ * @param {{ subscribe: Function, isLive?: Function }} [props.events] - the app's event stream, so a run is heard rather
+ *        than asked about (see createRunWatcher). Keep the object the same between renders.
  */
 export function useImportsController(props = {}) {
   var api = useMemo(function() { return createImportsApi(props.basePath); }, [props.basePath]);
   var pollMs = props.pollMs || 1000;
+  var events = props.events;
+  var watcher = useMemo(function() { return createRunWatcher({ api: api, events: events, pollMs: pollMs }); }, [api, events, pollMs]);
+  useEffect(function() { return function() { watcher.close(); }; }, [watcher]);
 
   var [targets, setTargets] = useState([]);
   var [targetsError, setTargetsError] = useState('');
   var [connectionId, setConnectionId] = useState('');
   var [dbInfoId, setDbInfoId] = useState('');
-  // The import running now: { runId, startedAt, progress }.
+  // The check or import running now: { runId, kind: 'check' | 'import', startedAt, progress }.
   var [importing, setImporting] = useState(null);
   // Bumped to make the history list read itself again.
   var [historyVersion, setHistoryVersion] = useState(0);
@@ -46,10 +54,26 @@ export function useImportsController(props = {}) {
   var upload = props.upload;
   var onUpload = useMemo(function() { return uploaderFor(api, upload); }, [api, upload]);
 
+  /** Wait for a run, showing how far it has got on the progress line. */
+  var follow = useCallback(async function(runId, kind) {
+    setImporting({ runId: runId, kind: kind, startedAt: Date.now(), progress: null });
+    try {
+      return await watcher.wait(runId, function(progress) {
+        if (mounted.current) setImporting(function(cur) { return cur && cur.runId === runId ? Object.assign({}, cur, { progress: progress }) : cur; });
+      });
+    } finally {
+      if (mounted.current) setImporting(function(cur) { return cur && cur.runId === runId ? null : cur; });
+    }
+  }, [watcher]);
+
+  // The check reads every row — minutes on a big CSV — so it runs in the
+  // background like the import. A server before @xeplr/imports 2.0.2 answers
+  // at once, without a run.
   var onInspect = useCallback(async function(filePath) {
     var found = await api.inspect(filePath);
-    return { format: found.format, parts: found.sheets, checks: found.checks };
-  }, [api]);
+    if (!found.runId) return { format: found.format, parts: found.sheets, checks: found.checks };
+    return checkResult(await follow(found.runId, 'check'));
+  }, [api, follow]);
 
   // Bound to the chosen database, so choosing another asks again.
   var onCheckTarget = useCallback(function(filePath, part) {
@@ -57,8 +81,8 @@ export function useImportsController(props = {}) {
     return api.checkTarget({ filePath: filePath, sheet: part.part, connectionId: connectionId, dbInfoId: dbInfoId, targetTable: part.target });
   }, [api, connectionId, dbInfoId]);
 
-  // STARTS the import, then asks how far it has got until it ends. The
-  // request answers at once with a run id, so no gateway timeout applies.
+  // STARTS the import, then follows it until it ends. The request answers at
+  // once with a run id, so no gateway timeout applies.
   var onCommit = useCallback(async function(filePath, mappings, meta) {
     if (!connectionId || !dbInfoId) throw new Error('Choose a database to import into first');
     var started = await api.commit({
@@ -67,22 +91,13 @@ export function useImportsController(props = {}) {
         return { sheet: m.part, targetTable: m.target, mode: m.mode, repairPastedRows: Boolean(m.fixes && m.fixes.pastedRows) };
       })
     });
-    setImporting({ runId: started.runId, startedAt: Date.now(), progress: null });
     setHistoryVersion(function(v) { return v + 1; });   // in the history from its first row
     try {
-      for (;;) {
-        await new Promise(function(r) { setTimeout(r, pollMs); });
-        var run = await api.run(started.runId);
-        if (run.status !== 'running') return { results: runResults(run) };
-        if (mounted.current) setImporting(function(cur) { return cur && cur.runId === run.id ? Object.assign({}, cur, { progress: run.progress }) : cur; });
-      }
+      return { results: runResults(await follow(started.runId, 'import')) };
     } finally {
-      if (mounted.current) {
-        setImporting(null);
-        setHistoryVersion(function(v) { return v + 1; });
-      }
+      if (mounted.current) setHistoryVersion(function(v) { return v + 1; });
     }
-  }, [api, connectionId, dbInfoId, pollMs]);
+  }, [api, connectionId, dbInfoId, follow]);
 
   function stop() {
     if (importing) api.stop(importing.runId).catch(function() {});
@@ -115,7 +130,7 @@ export function useImportsController(props = {}) {
     chooseConnection: chooseConnection,
     chooseDatabase: setDbInfoId,
     importing: importing,
-    progressText: importing ? importProgressText(importing.progress) : '',
+    progressText: !importing ? '' : importing.kind === 'check' ? checkProgressText(importing.progress) : importProgressText(importing.progress),
     stop: stop,
     historyVersion: historyVersion,
     // What the two built-in pages take.

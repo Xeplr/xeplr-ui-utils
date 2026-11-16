@@ -38,7 +38,8 @@ export function createImportsApi(basePath) {
 
   return {
     upload: function(file, onProgress) { return uploadFile(file, { url: base + '/files', onProgress: onProgress }); },
-    inspect: function(filePath) { return call('POST', '/inspect', { filePath: filePath }); },
+    // In the background: on a big CSV the check reads every row, for minutes.
+    inspect: function(filePath) { return call('POST', '/inspect', { filePath: filePath, background: true }); },
     checkTarget: function(body) { return call('POST', '/check-target', body); },
     commit: function(body) { return call('POST', '/commit', body); },
     run: function(runId) { return call('GET', '/runs/' + encodeURIComponent(runId)); },
@@ -67,6 +68,130 @@ export function fileNameOf(disposition, fallback) {
   if (star) { try { return decodeURIComponent(star[1]); } catch (e) { /* the plain one */ } }
   var plain = /filename="([^"]+)"/i.exec(cd);
   return plain ? plain[1] : fallback;
+}
+
+// ── WAITING FOR A RUN ──────────────────────────────────────────────────
+//
+// A check and an import both run in the background on the server and answer
+// with a run id. How the page hears how far one has got and how it ended:
+//
+//   On the app's event stream, when it gives one (`events`): the server tells
+//   each run as it moves and once when it ends (@xeplr/imports' `publish`).
+//   The stream is listened to from the moment the watcher is made, so an event
+//   is not missed for want of a listener; after a run starts it is asked about
+//   ONCE (it may have ended before its id came back), then waited for. While
+//   the stream is live it is asked again only every LIVE_ASK_MS — a safety net
+//   for a lost event, not the way the answer comes.
+//
+//   Without a stream, or while it is down (`events.isLive()` false): asked
+//   every pollMs, as before.
+//
+//   events = { subscribe(handler) → unsubscribe, isLive?() → boolean }
+//   handler gets each event's data: { type: 'import-run', runId, kind, status,
+//   progress, result, error }; anything else is ignored.
+
+export var LIVE_ASK_MS = 15000;
+
+/**
+ * @param {object} opts - { api, events?, pollMs? }
+ * @returns {{ wait(runId, onProgress) → Promise<run>, close() }} the run as GET /runs/:id gives it, once it ended
+ */
+export function createRunWatcher(opts) {
+  var api = opts.api;
+  var events = opts.events && typeof opts.events.subscribe === 'function' ? opts.events : null;
+  var pollMs = opts.pollMs || 1000;
+  var waiting = new Map();   // runId → { onProgress, done }
+  var closed = false;
+
+  function heard(run) {
+    var w = waiting.get(run.runId || run.id);
+    if (!w) return;
+    if (run.status === 'running') { if (w.onProgress) w.onProgress(run.progress || null); return; }
+    w.done(run);
+  }
+  var unsubscribe = events ? events.subscribe(function(e) {
+    if (e && e.type === 'import-run' && e.runId) heard(e);
+  }) : null;
+
+  function live() {
+    if (!events) return false;
+    try { return typeof events.isLive === 'function' ? Boolean(events.isLive()) : true; } catch (e) { return false; }
+  }
+
+  function wait(runId, onProgress) {
+    return new Promise(function(resolve, reject) {
+      var timer = null;
+      var over = false;
+      function done(run) {
+        if (over) return;
+        over = true;
+        waiting.delete(runId);
+        if (timer) clearTimeout(timer);
+        resolve(Object.assign({}, run, { id: runId }));
+      }
+      function fail(err) {
+        if (over) return;
+        over = true;
+        waiting.delete(runId);
+        if (timer) clearTimeout(timer);
+        reject(err);
+      }
+      waiting.set(runId, { onProgress: onProgress, done: done });
+      async function ask() {
+        timer = null;
+        if (over || closed) return;
+        try {
+          var run = await api.run(runId);
+          if (over) return;
+          if (run.status !== 'running') return done(run);
+          if (onProgress) onProgress(run.progress || null);
+        } catch (err) {
+          // With a stream the run may be on another API process, which does
+          // not know it: the stream still carries its ending.
+          if (!events) return fail(err);
+        }
+        if (!over && !closed) timer = setTimeout(ask, live() ? LIVE_ASK_MS : pollMs);
+      }
+      ask();
+    });
+  }
+
+  return {
+    wait: wait,
+    close: function() {
+      closed = true;
+      if (unsubscribe) { try { unsubscribe(); } catch (e) { /* gone already */ } }
+      waiting.clear();
+    }
+  };
+}
+
+/** What a finished check found, in onInspect's shape — or the error it ended with. */
+export function checkResult(run) {
+  if (run.status === 'error') throw new Error(run.error || 'The check failed');
+  if (run.status === 'stopped') throw new Error(run.error === 'Stopped' || !run.error ? 'The check was stopped.' : run.error);
+  var found = run.result || {};
+  return { format: found.format, parts: found.sheets, checks: found.checks };
+}
+
+/** "Checking the file · 1.2 GB of 3.0 GB (40%) · 412,000 rows" — how far a check has got. */
+export function checkProgressText(p) {
+  if (!p) return 'Checking the file…';
+  var parts = [];
+  if (p.parts > 1) parts.push('sheet ' + p.part + ' of ' + p.parts + (p.sheet ? ' (' + p.sheet + ')' : ''));
+  if (p.bytesRead != null && p.bytes) {
+    parts.push(sizeText(p.bytesRead) + ' of ' + sizeText(p.bytes) + ' (' + Math.min(100, Math.floor((p.bytesRead / p.bytes) * 100)) + '%)');
+  }
+  if (p.rowsRead != null) parts.push(Number(p.rowsRead).toLocaleString() + ' rows');
+  return 'Checking the file' + (parts.length ? ' · ' + parts.join(' · ') : '…');
+}
+
+/** 512 KB, 340 MB, 2.4 GB. */
+export function sizeText(bytes) {
+  var mb = bytes / 1024 / 1024;
+  if (mb >= 1024) return (mb / 1024).toFixed(1) + ' GB';
+  if (mb >= 1) return Math.round(mb) + ' MB';
+  return Math.max(1, Math.round(bytes / 1024)) + ' KB';
 }
 
 /** "Sheet 2 of 3 (Orders) · 412,000 rows read · 400,000 written" — how far an import has got. */
