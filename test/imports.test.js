@@ -1,4 +1,4 @@
-import { importProgressText, runResults, historyJob, databasesOf, fileNameOf } from '../src/imports/importsApi.js';
+import { importProgressText, runResults, historyJob, databasesOf, fileNameOf, uploaderFor, ACCEPT } from '../src/imports/importsApi.js';
 
 const results = []
 const check = (name, cond) => { results.push([name, cond]); console.log((cond ? '  ok   ' : '  FAIL ') + name) }
@@ -36,6 +36,24 @@ check('...none for one without, or unknown', databasesOf(targets, 'c2').length =
 check('file name: filename* first (accents, ₹)', fileNameOf("attachment; filename=\"x.xlsx\"; filename*=UTF-8''%E2%82%B9%20rows.xlsx", 'f') === '₹ rows.xlsx')
 check('...the plain one otherwise', fileNameOf('attachment; filename="stock - dropped rows.xlsx"', 'f') === 'stock - dropped rows.xlsx')
 check('...the fallback when there is none', fileNameOf(null, 'dropped rows.xlsx') === 'dropped rows.xlsx')
+
+console.log('\nhow a file is sent')
+{
+  const sent = []
+  const api = { upload: (file, onProgress) => { sent.push(['standard', file.name]); onProgress(100); return Promise.resolve({ filePath: '/u/' + file.name }) } }
+  const plain = uploaderFor(api, null)
+  await plain({ name: 'a.csv' }, () => {})
+  check('without the app\'s own: the standard upload', sent.join() === 'standard,a.csv')
+  const own = uploaderFor(api, (file, onProgress, { standard }) => {
+    if (file.size < 1000) return standard(file, onProgress)
+    sent.push(['pieces', file.name]); return Promise.resolve({ filePath: '/u/big/' + file.name })
+  })
+  const small = await own({ name: 's.csv', size: 10 }, () => {})
+  const big = await own({ name: 'b.parquet', size: 5000 }, () => {})
+  check('the app\'s own decides per file: the standard one for a small file, its own for a big one',
+    small.filePath === '/u/s.csv' && big.filePath === '/u/big/b.parquet' && sent.map((x) => x.join(':')).slice(1).join() === 'standard:s.csv,pieces:b.parquet')
+  check('the files it reads include Parquet', ACCEPT.split(',').indexOf('.parquet') !== -1 && ACCEPT.split(',').indexOf('.csv') !== -1)
+}
 
 const failed = results.filter(r => !r[1])
 console.log(`\n${results.length - failed.length}/${results.length} passed`)
