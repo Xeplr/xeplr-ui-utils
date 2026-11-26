@@ -5,7 +5,7 @@
 // '/imports', or '/api/imports' behind a proxy prefix. Requests carry the
 // headers configureUpload was given (uploadHeaders): sign-in and tenancy.
 
-import { uploadFile, uploadHeaders } from '../fileUpload/uploadFile.js';
+import { uploadFile, signedFetch } from '../fileUpload/uploadFile.js';
 
 /**
  * How a picked file is sent: the app's own `upload` when it gives one —
@@ -28,9 +28,9 @@ export function createImportsApi(basePath) {
   var base = String(basePath || '/imports').replace(/\/+$/, '');
 
   async function call(method, path, body) {
-    var headers = uploadHeaders();
-    if (body) headers['content-type'] = 'application/json';
-    var res = await fetch(base + path, { method: method, headers: headers, body: body ? JSON.stringify(body) : undefined });
+    var headers = body ? { 'content-type': 'application/json' } : {};
+    // signedFetch: the upload headers, and one renewal of an expired sign-in.
+    var res = await signedFetch(base + path, { method: method, headers: headers, body: body ? JSON.stringify(body) : undefined });
     var data = await res.json().catch(function() { return {}; });
     if (!res.ok) throw new Error(data.error || ('The request failed (' + res.status + ')'));
     return data;
@@ -51,7 +51,7 @@ export function createImportsApi(basePath) {
     remove: function(id) { return call('POST', '/history/' + encodeURIComponent(id) + '/delete'); },
     /** The dropped rows as a file: { blob, name } — saving it is the page's job. */
     droppedFile: async function(id) {
-      var res = await fetch(base + '/history/' + encodeURIComponent(id) + '/dropped/file', { headers: uploadHeaders() });
+      var res = await signedFetch(base + '/history/' + encodeURIComponent(id) + '/dropped/file');
       if (!res.ok) {
         var data = await res.json().catch(function() { return {}; });
         throw new Error(data.error || ('The download failed (' + res.status + ')'));

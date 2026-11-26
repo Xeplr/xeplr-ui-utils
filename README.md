@@ -152,7 +152,8 @@ export default function SelectCompany() {
 | `toggleBranch`, `decorateTree` | `(open, parentKey, key) → open`, `(nodes, open) → nodes` | Which branch of a settings tree is open at each level; `open` is `{ [parentKey]: key }`, the root's parent `''` |
 | `filterGridRows`, `sortGridRows` | `(rows, query, fields)`, `(rows, field, 'asc'\|'desc')` | Grid search and sort. An array field matches if any entry matches. |
 | `sanitizeTargetName`, `buildInitialMappings`, `checksFor` | `(name) → string`, `({ parts?, originalName?, checks? }) → [{ part, target, include, fixes }]`, `(inspectResult, part) → checks[]` | Data import mapping |
-| `configureUpload`, `uploadFile` | `({ url, headers, getHeaders })`, `(files, { url, fieldName, extraData, onProgress }) → Promise` | Multipart upload over XHR |
+| `configureUpload`, `uploadFile` | `({ url, headers, getHeaders, renew })`, `(files, { url, fieldName, extraData, onProgress }) → Promise` | Multipart upload over XHR. **Give `renew`** (`async () => boolean`, e.g. `@xeplr/ui-account`'s `renewSession`): on a 401 the upload renews the sign-in once and sends the file again. Without it, a token that ran out while the person sat on the page failed the upload with "token expired" while every other request renewed. |
+| `signedFetch`, `renewSignIn` | `(url, init) → Response`, `() → boolean` | `fetch` with the upload headers and the same one renewal on a 401 — what the Imports page's JSON calls use |
 | `attachProgressSource`, `progressSourceAttached`, `subscribeToProgress`, `describeProgress`, `describeComplete` | `(subscribe)`, `() → boolean`, `(key, handler) → unsubscribe`, `(data, noun?)`, `(data, noun?)` | The progress event source and its sentences |
 
 ### Imperative helpers, theme, data
@@ -297,7 +298,7 @@ The search type shows a ✕ only when there is text, and clearing calls `onChang
 ```jsx
 import { configureUpload, FileUploadPage } from '@xeplr/ui-utils'
 
-configureUpload({ url: '/uploads', getHeaders: () => ({ Authorization: 'Bearer ' + getToken() }) })
+configureUpload({ url: '/uploads', getHeaders: () => ({ Authorization: 'Bearer ' + getToken() }), renew: renewSession })
 
 <FileUploadPage allowedTypes={['image/*', 'application/pdf']} maxSize={10 * 1024 * 1024} maxFiles={3}
   onSuccess={(res) => raiseSnackbar('Uploaded', { design: 'success' })} />
@@ -320,7 +321,7 @@ configureUpload({ url: '/uploads', getHeaders: () => ({ Authorization: 'Bearer '
 The whole import feature, against [`@xeplr/imports`](https://www.npmjs.com/package/@xeplr/imports)' routes. An app that mounts that router adds one route here and nothing else:
 
 ```jsx
-configureUpload({ url: API_BASE + '/imports/files', getHeaders })   // once, at startup — the headers every call carries
+configureUpload({ url: API_BASE + '/imports/files', getHeaders, renew: renewSession })   // once, at startup — the headers every call carries, and how an expired sign-in renews
 <Route path="/upload" element={<ImportsPage basePath={API_BASE + '/imports'} />} />
 ```
 
