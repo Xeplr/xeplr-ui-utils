@@ -109,9 +109,14 @@ export function createRunWatcher(opts) {
     if (run.status === 'running') { if (w.onProgress) w.onProgress(run.progress || null); return; }
     w.done(run);
   }
-  var unsubscribe = events ? events.subscribe(function(e) {
-    if (e && e.type === 'import-run' && e.runId) heard(e);
-  }) : null;
+  var unsubscribe = null;
+  function listen() {
+    if (!events || unsubscribe) return;
+    unsubscribe = events.subscribe(function(e) {
+      if (e && e.type === 'import-run' && e.runId) heard(e);
+    });
+  }
+  listen();
 
   function live() {
     if (!events) return false;
@@ -158,9 +163,18 @@ export function createRunWatcher(opts) {
 
   return {
     wait: wait,
+    // Open again after close(). React's StrictMode (development) mounts,
+    // cleans up and mounts again: closed for good on the cleanup, the watcher
+    // never asked about a run again and a check sat on "Checking the file…"
+    // although the server had finished it. The hook re-opens it on each mount.
+    open: function() {
+      closed = false;
+      listen();
+    },
     close: function() {
       closed = true;
       if (unsubscribe) { try { unsubscribe(); } catch (e) { /* gone already */ } }
+      unsubscribe = null;
       waiting.clear();
     }
   };
