@@ -22,7 +22,9 @@ export function useImportsController(props = {}) {
   var pollMs = props.pollMs || 1000;
   var events = props.events;
   var watcher = useMemo(function() { return createRunWatcher({ api: api, events: events, pollMs: pollMs }); }, [api, events, pollMs]);
-  useEffect(function() { return function() { watcher.close(); }; }, [watcher]);
+  // open() on every mount: StrictMode's mount → cleanup → mount would
+  // otherwise leave it closed and no run would ever be heard finishing.
+  useEffect(function() { watcher.open(); return function() { watcher.close(); }; }, [watcher]);
 
   var [targets, setTargets] = useState([]);
   var [targetsError, setTargetsError] = useState('');
