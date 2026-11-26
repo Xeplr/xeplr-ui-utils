@@ -67,7 +67,7 @@ export { useImportsController } from './imports/useImportsController.js';
 export { IMPORTS_RULES } from './imports/validateDesign.js';
 export { ImportsSample } from './imports/designs/index.js';
 export { ImportsPage } from './imports/pages.jsx';
-export { uploadHeaders } from './fileUpload/uploadFile.js';
+export { uploadHeaders, signedFetch, renewSignIn, renewAndRetry } from './fileUpload/uploadFile.js';
 
 // NumberField — model
 export {
