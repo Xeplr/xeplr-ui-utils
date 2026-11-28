@@ -343,7 +343,7 @@ Requests carry the headers `configureUpload` was given (`uploadHeaders()`), so s
 
 - `createImportsApi(basePath)` makes every route call.
 - `createRunWatcher({ api, events?, pollMs? })` → `{ wait(runId, onProgress) → Promise<run>, open(), close() }`: waits for a check or an import as described under `events`, without React. `open()` undoes `close()` — `useImportsController` calls it on every mount, because React's StrictMode (development) mounts, cleans up and mounts again, and a watcher closed by that cleanup never heard a run finish ("Checking the file…" forever although the server had finished). A run whose `GET /runs/:id` fails (with several API processes it may be held by another one) is still heard ending on the stream.
-- Pure helpers: `importProgressText`, `checkProgressText`, `runResults`, `checkResult` (a finished check in `onInspect`'s shape, or its error), `historyJob`, `databasesOf`, `fileNameOf`, `uploaderFor(api, upload)` (how a picked file is sent), `ACCEPT` (exported as `IMPORT_ACCEPT`: the files it reads, Parquet among them).
+- Pure helpers: `importProgressText`, `checkProgressText`, `runResults`, `checkResult` (a finished check in `onInspect`'s shape — `{ format, parts, checks, rows }`, `rows` each part's `{ rows, over }` count from @xeplr/imports 2.0.6+, else null — or its error), `historyJob`, `databasesOf`, `fileNameOf`, `uploaderFor(api, upload)` (how a picked file is sent), `ACCEPT` (exported as `IMPORT_ACCEPT`: the files it reads, Parquet among them).
 
 A custom design receives the controller's values plus `importSection` and `historySection` as elements.
 

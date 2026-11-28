@@ -185,7 +185,8 @@ export function checkResult(run) {
   if (run.status === 'error') throw new Error(run.error || 'The check failed');
   if (run.status === 'stopped') throw new Error(run.error === 'Stopped' || !run.error ? 'The check was stopped.' : run.error);
   var found = run.result || {};
-  return { format: found.format, parts: found.sheets, checks: found.checks };
+  // rows: each part's row count ({ rows, over }) — @xeplr/imports 2.0.6+.
+  return { format: found.format, parts: found.sheets, checks: found.checks, rows: found.rows || null };
 }
 
 /** "Checking the file · 1.2 GB of 3.0 GB (40%) · 412,000 rows" — how far a check has got. */

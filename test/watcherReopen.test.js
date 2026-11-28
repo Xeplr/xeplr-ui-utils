@@ -3,7 +3,7 @@
 // server answering /runs/:id the way @xeplr/imports does.
 import http from 'http';
 import { configureUpload } from '../src/fileUpload/uploadFile.js';
-import { createImportsApi, createRunWatcher } from '../src/imports/importsApi.js';
+import { createImportsApi, createRunWatcher, checkResult } from '../src/imports/importsApi.js';
 
 const results = []
 const check = (name, cond) => { results.push([name, cond]); console.log((cond ? '  ok   ' : '  FAIL ') + name) }
@@ -13,7 +13,8 @@ let asks = 0
 const server = http.createServer((req, res) => {
   asks++
   res.writeHead(200, { 'content-type': 'application/json' })
-  res.end(JSON.stringify({ id: 'r1', kind: 'check', status: asks < 2 ? 'running' : 'complete', progress: { rowsRead: asks } }))
+  res.end(JSON.stringify({ id: 'r1', kind: 'check', status: asks < 2 ? 'running' : 'complete', progress: { rowsRead: asks },
+    result: { format: 'csv', checks: {}, rows: { '': { rows: 6149, over: null } } } }))
 })
 await new Promise((r) => server.listen(0, '127.0.0.1', r))
 configureUpload({ getHeaders: () => ({}) })
@@ -36,6 +37,10 @@ const run = await Promise.race([
   new Promise((r) => setTimeout(() => r('timed out'), 3000))
 ])
 check('the run is heard finishing after close → open', run !== 'timed out' && run.status === 'complete' && asks >= 2)
+
+const found = checkResult(run)
+check('the check\'s row count reaches the page', found.rows && found.rows[''].rows === 6149)
+check('an older server without counts: rows is null', checkResult({ status: 'complete', result: { format: 'csv', checks: {} } }).rows === null)
 
 watcher.close()
 server.close()

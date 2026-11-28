@@ -73,7 +73,7 @@ export function useImportsController(props = {}) {
   // at once, without a run.
   var onInspect = useCallback(async function(filePath) {
     var found = await api.inspect(filePath);
-    if (!found.runId) return { format: found.format, parts: found.sheets, checks: found.checks };
+    if (!found.runId) return { format: found.format, parts: found.sheets, checks: found.checks, rows: found.rows || null };
     return checkResult(await follow(found.runId, 'check'));
   }, [api, follow]);
 
